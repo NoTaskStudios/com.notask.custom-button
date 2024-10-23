@@ -2,7 +2,8 @@ using UnityEngine.EventSystems;
 
 namespace CustomButton
 {
-    public interface ICustomButton
+    public interface ICustomButton : ISubmitHandler, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler,
+        IPointerEnterHandler, IPointerExitHandler
     {
         public void OnClick();
         public void OnPointerClick(PointerEventData eventData);

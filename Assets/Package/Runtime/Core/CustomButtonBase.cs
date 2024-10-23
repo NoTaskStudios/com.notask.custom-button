@@ -10,10 +10,12 @@ namespace CustomButton
 {
     //[ExecuteAlways]
     [RequireComponent(typeof(Image)), ExecuteInEditMode]
-    public abstract class CustomButtonBase : MonoBehaviour, ICustomButton, ISubmitHandler, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
+    public abstract class CustomButtonBase : MonoBehaviour, ICustomButton
     {
         private RectTransform rectTransform;
-#region Activators
+
+        #region Activators
+
         public bool activeColorTint = true;
         public bool activeSpriteSwap;
         public bool activeAnimation;
@@ -21,8 +23,11 @@ namespace CustomButton
         public bool applyBlinkHighlighted;
         public bool applyOffsetOnChildren;
         public bool applyInvertColorOnTexts;
-#endregion
+
+        #endregion
+
         [SerializeField] private bool _interactable = true;
+
         public bool Interactable
         {
             get => _interactable;
@@ -33,82 +38,108 @@ namespace CustomButton
                 UpdateButtonState();
             }
         }
+
         private bool isPlayingAnimationEvt;
         [SerializeField] private Graphic targetGraphic;
         [SerializeField] private Sprite normalSprite;
         [SerializeField] private SpriteState spriteState;
         [SerializeField] private Color targetColorBlend;
         private Color invertedCurrentColor = Color.white;
+
         public SpriteState SpriteState
         {
             get { return spriteState; }
             set { spriteState = value; }
         }
+
         public ColorBlock blockColors = ColorBlock.defaultColorBlock;
+
         public ColorBlock BlockColors
         {
             get { return blockColors; }
-            set
-            {
-                blockColors = value;
-            }
+            set { blockColors = value; }
         }
+
         public Graphic[] graphics;
+
         public Graphic TargetGraphic
         {
             get { return targetGraphic = GetComponent<Graphic>(); }
             set { targetGraphic = value; }
         }
+
         #region Plus Events
+
         public GameObject[] eventsOnInteractable;
-        
+
         #endregion
-#region Coroutines
+
+        #region Coroutines
+
         private Coroutine colorLerpCoroutine;
         private Coroutine opacityLerpCoroutine;
         private Coroutine animationCoroutine;
         private Coroutine offsetCoroutine;
-#endregion
-#region Animations Presets
+
+        #endregion
+
+        #region Animations Presets
+
         public AnimationPreset animationEventDown;
         public AnimationPreset animationEventUp;
         public AnimationPreset animationEventEnter;
         public AnimationPreset animationEventExit;
-#endregion
+
+        #endregion
+
         private Vector3 originalPosition;
         private Vector2[] initialPositions = new Vector2[0];
         public Vector2 offsetVectorChildren;
         [Range(0f, 0.4f)] public float durationOffset = 0.1f;
-#region Button Default Events
+
+        #region Button Default Events
+
         private bool isPressed;
-        public Button.ButtonClickedEvent onClick = new ();
-#endregion
+        public Button.ButtonClickedEvent onClick = new();
+
+        #endregion
+
         private void Awake()
         {
             rectTransform = GetComponent<RectTransform>();
             originalPosition = rectTransform.anchoredPosition;
             if (targetGraphic == null) targetGraphic = GetComponent<Image>();
         }
+
         private void OnEnable()
         {
             onClick.AddListener(OnClick);
         }
+
         private void OnDisable()
         {
-            onClick.RemoveAllListeners();
+            onClick.RemoveListener(OnClick);
         }
+
         private void Start()
         {
             GetChildren();
         }
+
         private void OnDestroy() => onClick.RemoveAllListeners();
         public void ToogleInteractable() => Interactable = !Interactable;
+
         public virtual void OnClick()
         {
-            if(!_interactable) return;
+            if (!_interactable) return;
+            onClick?.Invoke();
         }
+
         private void GetChildren() => graphics = GetComponentsInChildren<Graphic>();
-        private void SetSprite(Image targetImage, Sprite sprite) => targetImage.sprite = sprite == null ? normalSprite : sprite;
+
+        private void SetSprite(Image targetImage, Sprite sprite) =>
+            targetImage.sprite = sprite == null ? normalSprite : sprite;
+
         protected void UpdateButtonState()
         {
             if (activeColorTint)
@@ -118,7 +149,9 @@ namespace CustomButton
             if (activeAnimation)
                 HandleAnimationTransition();
         }
-#region Handles Transitions
+
+        #region Handles Transitions
+
         private void HandleColorTintTransition()
         {
             if (isPressed)
@@ -127,12 +160,14 @@ namespace CustomButton
                 //StartColorTintCoroutine(blockColors.pressedColor);
                 return;
             }
+
             SetColorInteractable();
         }
+
         private void HandleSpriteSwapTransition()
         {
             var targetImage = targetGraphic as Image;
-        
+
             if (isPressed)
                 SetSprite(targetImage, spriteState.pressedSprite);
             else if (_interactable)
@@ -140,21 +175,25 @@ namespace CustomButton
             else
                 SetSprite(targetImage, spriteState.disabledSprite);
         }
+
         private void HandleAnimationTransition()
         {
             if (!activeAnimation && !isPressed) return;
         }
-#endregion
+
+        #endregion
+
         private void StartColorTintCoroutine(Color targetColor)
         {
             UpdateColorBlock(targetColor);
-            if(!applyOpacityOnChildren) return;
+            if (!applyOpacityOnChildren) return;
             opacityLerpCoroutine = StartCoroutine(
                 SmoothOpacityByGraphics(
                     graphics,
                     targetColor,
                     blockColors.fadeDuration));
         }
+
         public void CheckInverterColorText()
         {
             // Refactor
@@ -166,6 +205,7 @@ namespace CustomButton
             targetColorBlend.a = 1;
             UpdateTextColor(Color.white - targetColorBlend);
         }
+
         private void UpdateTextColor(Color currentColor)
         {
             currentColor.a = 1f;
@@ -176,7 +216,7 @@ namespace CustomButton
 
         public void UpdateColorBlock(Color targetColor)
         {
-            targetGraphic.CrossFadeColor(targetColor, blockColors.fadeDuration,true, true);
+            targetGraphic.CrossFadeColor(targetColor, blockColors.fadeDuration, true, true);
             CheckInverterColorText();
         }
 
@@ -185,57 +225,67 @@ namespace CustomButton
             GetChildren();
             UpdateButtonState();
         }
+
         public void OnSubmit(BaseEventData eventData)
         {
             if (!_interactable) return;
             onClick?.Invoke();
         }
-        public void OnPointerClick(PointerEventData eventData){
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
             if (!_interactable) return;
-            onClick?.Invoke();
+            OnClick();
         }
+
         public void OnPointerDown(PointerEventData eventData)
         {
-            if(!_interactable) return;
+            if (!_interactable) return;
             isPressed = true;
             if (applyOffsetOnChildren && offsetCoroutine == null)
                 offsetCoroutine = StartCoroutine(OffsetBalanceDown(offsetVectorChildren, durationOffset));
             UpdateButtonState();
             ExecuteAnimation(animationEventDown);
         }
+
         public void OnPointerUp(PointerEventData eventData)
         {
-            if(!_interactable) return;
+            if (!_interactable) return;
             isPressed = false;
             if (applyOffsetOnChildren)
                 offsetCoroutine = StartCoroutine(OffsetBalanceUp(initialPositions, durationOffset));
             UpdateButtonState();
             ExecuteAnimation(animationEventUp);
         }
+
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if(!_interactable) return;
+            if (!_interactable) return;
             if (activeColorTint)
             {
                 UpdateColorBlock(blockColors.highlightedColor);
             }
+
             ExecuteAnimation(animationEventEnter);
         }
+
         public void OnPointerExit(PointerEventData eventData)
         {
-            if(!_interactable) return;
+            if (!_interactable) return;
             if (applyOffsetOnChildren && initialPositions.Length > 0)
                 offsetCoroutine = StartCoroutine(OffsetBalanceUp(initialPositions, durationOffset));
             if (activeColorTint)
             {
                 UpdateColorBlock(blockColors.normalColor);
             }
+
             ExecuteAnimation(animationEventExit);
         }
+
         private void ExecuteAnimation(AnimationPreset currentAnimation = null)
         {
             if (currentAnimation == null || isPlayingAnimationEvt) return;
-            if(activeAnimation && !isPlayingAnimationEvt)
+            if (activeAnimation && !isPlayingAnimationEvt)
             {
                 animationCoroutine = currentAnimation.animationStyle switch
                 {
@@ -246,6 +296,7 @@ namespace CustomButton
                 };
             }
         }
+
         private void SetColorInteractable()
         {
             if (applyOpacityOnChildren)
@@ -258,10 +309,14 @@ namespace CustomButton
                         targetColor,
                         blockColors.fadeDuration));
             }
+
             UpdateColorBlock(_interactable ? blockColors.normalColor : blockColors.disabledColor);
         }
-#region Offset Children Animation
-        private static IEnumerator SmoothOpacityByGraphics(IReadOnlyList<Graphic> graphics, Color targetColor, float duration)
+
+        #region Offset Children Animation
+
+        private static IEnumerator SmoothOpacityByGraphics(IReadOnlyList<Graphic> graphics, Color targetColor,
+            float duration)
         {
             var elapsedTime = 0f;
 
@@ -287,6 +342,7 @@ namespace CustomButton
                 yield return null;
             }
         }
+
         private IEnumerator SmoothOpacityByColor(IReadOnlyList<Graphic> startColor, Color targetColor, float duration)
         {
             var elapsedTime = 0f;
@@ -295,7 +351,7 @@ namespace CustomButton
             {
                 elapsedTime += Time.deltaTime;
                 var t = Mathf.Clamp01(elapsedTime / duration);
-                        
+
                 for (var i = 1; i < graphics.Length; i++)
                 {
                     var currentgraphic = graphics[i];
@@ -309,10 +365,14 @@ namespace CustomButton
                         Mathf.Lerp(startColor[i].color.a, targetColor.a, t));
                 }
             }
+
             yield return null;
         }
-#endregion
-#region TODO Refactore
+
+        #endregion
+
+        #region TODO Refactore
+
         private IEnumerator OffsetBalanceUp(IReadOnlyList<Vector2> initialPositions, float duration)
         {
             var elapsedTime = 0f;
@@ -327,17 +387,21 @@ namespace CustomButton
                     var currentGraphic = graphics[i];
                     var currentInitialPosition = initialPositions[i];
 
-                    currentGraphic.rectTransform.anchoredPosition = Vector2.Lerp(currentGraphic.rectTransform.anchoredPosition, currentInitialPosition, t);
+                    currentGraphic.rectTransform.anchoredPosition =
+                        Vector2.Lerp(currentGraphic.rectTransform.anchoredPosition, currentInitialPosition, t);
                 }
 
                 yield return null;
             }
+
             for (var i = 0; i < graphics.Length; i++)
             {
                 graphics[i].rectTransform.anchoredPosition = initialPositions[i];
             }
+
             offsetCoroutine = null;
         }
+
         private IEnumerator OffsetBalanceDown(Vector2 offset, float duration)
         {
             initialPositions = new Vector2[graphics.Length];
@@ -359,8 +423,9 @@ namespace CustomButton
                     var currentGraphic = graphics[i];
                     var currentInitialPosition = initialPositions[i];
                     var targetPosition = currentInitialPosition + offset;
-                    
-                    currentGraphic.rectTransform.anchoredPosition = Vector2.Lerp(currentInitialPosition, targetPosition, t);
+
+                    currentGraphic.rectTransform.anchoredPosition =
+                        Vector2.Lerp(currentInitialPosition, targetPosition, t);
                 }
 
                 yield return null;
@@ -372,8 +437,10 @@ namespace CustomButton
             }
         }
 
-#endregion
-#region Animations IEnumerators
+        #endregion
+
+        #region Animations IEnumerators
+
         private IEnumerator ShakeAnimation(AnimationPreset currentAnimation)
         {
             isPlayingAnimationEvt = true;
@@ -389,10 +456,12 @@ namespace CustomButton
                 elapsedTime += Time.deltaTime;
                 yield return null;
             }
+
             rectTransform.anchoredPosition = originalPosition;
             animationCoroutine = null;
             isPlayingAnimationEvt = false;
         }
+
         private IEnumerator ScaleAnimation(AnimationPreset currentAnimation)
         {
             var elapsedTime = 0f;
@@ -410,6 +479,7 @@ namespace CustomButton
             animationCoroutine = null;
             rectTransform.localScale = originalScale;
         }
+
         private IEnumerator RotateAnimation(AnimationPreset currentAnimation)
         {
             var elapsedTime = 0f;
@@ -425,9 +495,11 @@ namespace CustomButton
                 elapsedTime += Time.deltaTime;
                 yield return null;
             }
+
             animationCoroutine = null;
             rectTransform.rotation = originalRotation;
         }
-#endregion
+
+        #endregion
     }
 }

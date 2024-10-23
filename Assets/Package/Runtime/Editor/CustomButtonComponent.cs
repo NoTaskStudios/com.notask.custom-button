@@ -3,6 +3,7 @@ using CustomButton.Utils;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 namespace CustomButton
 {
@@ -33,11 +34,6 @@ namespace CustomButton
                     menuCommand.context = rectTransform.gameObject;
                 else
                     menuCommand.context = canvas.gameObject;
-            }
-            else
-            {
-                if (canvas == null)
-                    CreateCanvas(menuCommand);
             }
 
             var customButtonObject = new GameObject("Custom Button");
@@ -96,16 +92,26 @@ namespace CustomButton
         }
         private static Canvas FindCanvasInHierarchy(MenuCommand menuCommand)
         {
+            Canvas foundCanvas = null;
             var canvases = FindObjectsOfType<Canvas>();
             foreach (var canvas in canvases)
             {
                 if (!canvas.isActiveAndEnabled) continue;
                 menuCommand.context = canvas.gameObject;
-                return canvas;
+                foundCanvas = canvas;
             }
-            return null;
+
+            if (!foundCanvas)// if canvas not found, create one
+            {
+                foundCanvas = CreateCanvas(menuCommand);
+            }
+            
+            //look for eventSystem
+            if(!FindFirstObjectByType<EventSystem>()) CreateEventSystem();
+            
+            return foundCanvas;
         }
-        private static void CreateCanvas(MenuCommand menuCommand)
+        private static Canvas CreateCanvas(MenuCommand menuCommand)
         {
             var canvasObject = new GameObject("Canvas");
             menuCommand.context = canvasObject;
@@ -115,6 +121,14 @@ namespace CustomButton
 
             canvasObject.AddComponent<CanvasScaler>();
             canvasObject.AddComponent<GraphicRaycaster>();
+            return canvas;
+        }
+
+        private static void CreateEventSystem()
+        {
+            GameObject eventSystem = new("Event System");
+            eventSystem.AddComponent<EventSystem>();
+            eventSystem.AddComponent<StandaloneInputModule>();
         }
     }
     
