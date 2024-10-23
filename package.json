@@ -1,0 +1,26 @@
+﻿{
+  "name": "com.oxentegames.custom-button",
+  "displayName": "Custom Button",
+  "version": "1.2.1-preview",
+  "unity": "6000.0",
+  "unityRelease": "23f1",
+  "description": "A custom button package for Unity",
+  "author": {
+    "name": "valdeci danilo",
+    "email": "valdecidanilo@live.com"
+  },
+  "keywords": [
+    "custom",
+    "button",
+    "unity",
+    "preview"
+  ],
+  "samples": [
+    {
+      "displayName": "Custom Button Samples",
+      "description": "Samples for the Custom Button package",
+      "path": "Samples/Overview"
+    }
+  ],
+  "preview": true
+}
