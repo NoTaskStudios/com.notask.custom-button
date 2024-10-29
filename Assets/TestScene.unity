@@ -562,8 +562,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -643,7 +643,6 @@ GameObject:
   - component: {fileID: 1377865626}
   - component: {fileID: 1377865628}
   - component: {fileID: 1377865627}
-  - component: {fileID: 1377865629}
   m_Layer: 0
   m_Name: Image
   m_TagString: Untagged
@@ -708,18 +707,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1377865625}
   m_CullTransparentMesh: 1
---- !u!114 &1377865629
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1377865625}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af910d31851b49e44ae2aab4fc9f0660, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1461545808
 GameObject:
   m_ObjectHideFlags: 0
@@ -839,15 +826,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61850f1f6a0ce364e883860c5e63c855, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  activeColorTint: 1
+  activeColorTint: 0
   activeSpriteSwap: 0
   activeAnimation: 1
   changeChildrenColor: 0
   childrenColorOpacityOnly: 0
   applyBlinkHighlighted: 0
   applyOffsetOnChildren: 0
-  applyInvertColorOnTexts: 0
-  _interactable: 1
+  applyInvertColorOnTexts: 1
+  _interactable: 0
   targetGraphic: {fileID: 2047661212}
   normalSprite: {fileID: 0}
   spriteState:
@@ -872,7 +859,6 @@ MonoBehaviour:
   pressedAnimation: {fileID: 11400000, guid: 9c7ef65eabc33dd468963fda4f0ffc04, type: 2}
   selectedAnimation: {fileID: 11400000, guid: 1f33defe98240df40b005ae16711d9fe, type: 2}
   disabledAnimation: {fileID: 0}
-  currentAnimation: {fileID: 0}
   offsetVectorChildren: {x: 0, y: 0}
   durationOffset: 0.1
   onClick:
