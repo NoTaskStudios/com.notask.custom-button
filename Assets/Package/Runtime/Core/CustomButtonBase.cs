@@ -131,8 +131,7 @@ namespace CustomButton
 
         public virtual void OnClick()
         {
-            if (!_interactable) return;
-            onClick?.Invoke();
+
         }
 
         private void GetChildren() => graphics = GetComponentsInChildren<Graphic>();
