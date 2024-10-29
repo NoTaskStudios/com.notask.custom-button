@@ -54,11 +54,12 @@ namespace CustomButton
             get => _selectionState;
             set
             {
+                if (_selectionState == value) return;
                 _selectionState = value;
                 UpdateButtonState();
+                onStateChange?.Invoke(_selectionState);
             }
         }
-
 
         public SpriteState SpriteState
         {
@@ -84,7 +85,7 @@ namespace CustomButton
 
         #region Plus Events
 
-        public GameObject[] eventsOnInteractable;
+        public Action<SelectionState> onStateChange;
 
         #endregion
 
@@ -198,6 +199,7 @@ namespace CustomButton
         public void OnPointerUp(PointerEventData eventData)
         {
             if (!_interactable) return;
+            Debug.Log("up");
             selectionState = SelectionState.Normal;
             return;//leaving to check while refactoring
             isPressed = false;
@@ -209,7 +211,7 @@ namespace CustomButton
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (!_interactable || isSelected) return;
+            if (!_interactable || isSelected || selectionState == SelectionState.Pressed) return;
             selectionState = SelectionState.Highlighted;
             return;//leaving to check while refactoring
             if (activeColorTint)
@@ -222,7 +224,7 @@ namespace CustomButton
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            if (!_interactable || isSelected) return;
+            if (!_interactable || isSelected || selectionState == SelectionState.Pressed) return;
             selectionState = SelectionState.Normal;
             return;//leaving to check while refactoring
             if (applyOffsetOnChildren && initialPositions.Length > 0)
