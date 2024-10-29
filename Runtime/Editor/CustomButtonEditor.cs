@@ -21,10 +21,11 @@ namespace CustomButton
         private SerializedProperty spriteSwapProperty;
         private SerializedProperty offsetVectorChildrenProperty;
         // Animation Preset
-        private SerializedProperty presetEvtDownProperty;
-        private SerializedProperty presetEvtUpProperty;
-        private SerializedProperty presetEvtEnterProperty;
-        private SerializedProperty presetEvtExitProperty;
+        private SerializedProperty normalAnimProperty;
+        private SerializedProperty highlightedAnimProperty;
+        private SerializedProperty pressedAnimProperty;
+        private SerializedProperty selectedAnimProperty;
+        private SerializedProperty disabledAnimProperty;
         //Tab Toogles
         private bool showGeneralProperties = true;
         private bool showColorProperties;
@@ -59,10 +60,11 @@ namespace CustomButton
             offsetVectorChildrenProperty = serializedObject.FindProperty("offsetVectorChildren");
             applyBlinkHighlightedProperty = serializedObject.FindProperty("applyBlinkHighlighted");
             // Animation Preset
-            presetEvtDownProperty = serializedObject.FindProperty("animationEventDown");
-            presetEvtUpProperty = serializedObject.FindProperty("animationEventUp");
-            presetEvtEnterProperty = serializedObject.FindProperty("animationEventEnter");
-            presetEvtExitProperty = serializedObject.FindProperty("animationEventExit");
+            normalAnimProperty = serializedObject.FindProperty(nameof(CustomButtonBase.normalAnimation));
+            highlightedAnimProperty = serializedObject.FindProperty(nameof(CustomButtonBase.highlightedAnimation));
+            pressedAnimProperty = serializedObject.FindProperty(nameof(CustomButtonBase.pressedAnimation));
+            selectedAnimProperty = serializedObject.FindProperty(nameof(CustomButtonBase.selectedAnimation));
+            disabledAnimProperty = serializedObject.FindProperty(nameof(CustomButtonBase.disabledAnimation));
             //Tab System
             activeColorTintProperty = serializedObject.FindProperty("activeColorTint");
             activeSpriteSwapProperty = serializedObject.FindProperty(nameof(CustomButtonBase.activeSpriteSwap));
@@ -195,10 +197,11 @@ namespace CustomButton
                     activeAnimationProperty.serializedObject.ApplyModifiedProperties();
                 }
                 EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(presetEvtDownProperty, true);
-                EditorGUILayout.PropertyField(presetEvtUpProperty, true);
-                EditorGUILayout.PropertyField(presetEvtEnterProperty, true);
-                EditorGUILayout.PropertyField(presetEvtExitProperty, true);
+                EditorGUILayout.PropertyField(normalAnimProperty, true);
+                EditorGUILayout.PropertyField(highlightedAnimProperty, true);
+                EditorGUILayout.PropertyField(pressedAnimProperty, true);
+                EditorGUILayout.PropertyField(selectedAnimProperty, true);
+                EditorGUILayout.PropertyField(disabledAnimProperty, true);
                 EditorGUI.indentLevel--;
             }
             EditorGUILayout.Space();
