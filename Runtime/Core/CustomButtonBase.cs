@@ -138,7 +138,7 @@ namespace CustomButton
         private void GetChildren() => graphics = GetComponentsInChildren<Graphic>();
 
         private void SetSprite(Image targetImage, Sprite sprite) =>
-            targetImage.sprite = sprite == null ? normalSprite : sprite;
+            targetImage.overrideSprite = sprite;
 
         protected void UpdateButtonState()
         {
@@ -168,12 +168,15 @@ namespace CustomButton
         {
             var targetImage = targetGraphic as Image;
 
+            Sprite sprite = null;
             if (isPressed)
-                SetSprite(targetImage, spriteState.pressedSprite);
+                sprite = spriteState.pressedSprite;
             else if (_interactable)
-                SetSprite(targetImage, spriteState.highlightedSprite);
+                sprite = spriteState.highlightedSprite;
             else
-                SetSprite(targetImage, spriteState.disabledSprite);
+                sprite = spriteState.disabledSprite;
+
+            SetSprite(targetImage, sprite);
         }
 
         private void HandleAnimationTransition()
