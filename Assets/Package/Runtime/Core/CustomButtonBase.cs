@@ -250,7 +250,7 @@ namespace CustomButton
             if (activeColorTint)
                 HandleColorTintTransition(currentState);
             if (activeSpriteSwap)
-                HandleSpriteSwapTransition();
+                HandleSpriteSwapTransition(currentState);
             if (activeAnimation)
                 HandleAnimationTransition();
         }
@@ -316,17 +316,19 @@ namespace CustomButton
 
         #region SpriteTransitions
 
-        private void HandleSpriteSwapTransition()
+        private void HandleSpriteSwapTransition(SelectionState state)
         {
             var targetImage = targetGraphic as Image;
+            if (targetImage == null) return;
 
-            Sprite sprite = null;
-            if (isPressed)
-                sprite = spriteState.pressedSprite;
-            else if (_interactable)
-                sprite = spriteState.highlightedSprite;
-            else
-                sprite = spriteState.disabledSprite;
+            Sprite sprite = state switch
+            {
+                SelectionState.Highlighted => spriteState.highlightedSprite,
+                SelectionState.Pressed => spriteState.pressedSprite,
+                SelectionState.Selected => spriteState.selectedSprite,
+                SelectionState.Disabled => spriteState.disabledSprite,
+                _ => null
+            };
 
             SetSprite(targetImage, sprite);
         }
