@@ -47,7 +47,7 @@ namespace CustomButton
             interactableProperty = serializedObject.FindProperty("_interactable");
             onClickProperty = serializedObject.FindProperty("onClick");
             // General
-            opacityOnChildrenProperty = serializedObject.FindProperty("applyOpacityOnChildren");
+            opacityOnChildrenProperty = serializedObject.FindProperty(nameof(CustomButtonBase.childrenColorOpacityOnly));
             offsetOnChildrenProperty = serializedObject.FindProperty("applyOffsetOnChildren");
             // Color Tint
             targetGraphicProperty = serializedObject.FindProperty("targetGraphic");
@@ -149,7 +149,7 @@ namespace CustomButton
                 EditorGUILayout.PropertyField(blockColorsProperty);
                 EditorGUI.indentLevel--;
                 // Só aplicar esta fução caso mexa no colorpicker no inpector
-                customButtonBase.UpdateColorBlock(customButtonBase.blockColors.normalColor);
+                //customButtonBase.UpdateColor(customButtonBase.blockColors.normalColor);
                 
                 EditorUtility.SetDirty(customButtonBase);
             }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using CustomButton.Utils;
@@ -19,7 +20,8 @@ namespace CustomButton
         public bool activeColorTint = true;
         public bool activeSpriteSwap;
         public bool activeAnimation;
-        public bool applyOpacityOnChildren;
+        public bool changeChildrenColor;
+        public bool childrenColorOpacityOnly;
         public bool applyBlinkHighlighted;
         public bool applyOffsetOnChildren;
         public bool applyInvertColorOnTexts;
@@ -45,6 +47,18 @@ namespace CustomButton
         [SerializeField] private SpriteState spriteState;
         [SerializeField] private Color targetColorBlend;
         private Color invertedCurrentColor = Color.white;
+        private SelectionState _selectionState;
+
+        public SelectionState selectionState
+        {
+            get => _selectionState;
+            set
+            {
+                _selectionState = value;
+                UpdateButtonState();
+            }
+        }
+
 
         public SpriteState SpriteState
         {
@@ -64,7 +78,7 @@ namespace CustomButton
 
         public Graphic TargetGraphic
         {
-            get { return targetGraphic = GetComponent<Graphic>(); }
+            get { return targetGraphic ??= GetComponent<Graphic>(); }
             set { targetGraphic = value; }
         }
 
@@ -104,6 +118,7 @@ namespace CustomButton
 
         #endregion
 
+        #region Built-in
         private void Awake()
         {
             rectTransform = GetComponent<RectTransform>();
@@ -127,6 +142,8 @@ namespace CustomButton
         }
 
         private void OnDestroy() => onClick.RemoveAllListeners();
+        #endregion
+
         public void ToogleInteractable() => Interactable = !Interactable;
 
         public virtual void OnClick()
@@ -136,32 +153,165 @@ namespace CustomButton
 
         private void GetChildren() => graphics = GetComponentsInChildren<Graphic>();
 
-        private void SetSprite(Image targetImage, Sprite sprite) =>
-            targetImage.overrideSprite = sprite;
+        #region Handles Transitions
 
+        #endregion
+
+        public void OnTransformChildrenChanged()
+        {
+            GetChildren();
+            UpdateButtonState();
+        }
+
+        #region PointerEvents
+
+        public void OnSubmit(BaseEventData eventData)
+        {
+            if (!_interactable) return;
+            onClick?.Invoke();
+        }
+
+        //Goes after PointerUp
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (!_interactable) return;
+            selectionState = SelectionState.Selected;
+            EventSystem.current.SetSelectedGameObject(gameObject);
+            onClick?.Invoke();
+        }
+
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            if (!_interactable) return;
+            selectionState = SelectionState.Pressed;
+            return;//leaving to check while refactoring
+            isPressed = true;
+            if (applyOffsetOnChildren && offsetCoroutine == null)
+                offsetCoroutine = StartCoroutine(OffsetBalanceDown(offsetVectorChildren, durationOffset));
+            UpdateButtonState();
+            ExecuteAnimation(animationEventDown);
+        }
+
+        //Goes before PointerUp
+        public void OnPointerUp(PointerEventData eventData)
+        {
+            if (!_interactable) return;
+            selectionState = SelectionState.Normal;
+            return;//leaving to check while refactoring
+            isPressed = false;
+            if (applyOffsetOnChildren)
+                offsetCoroutine = StartCoroutine(OffsetBalanceUp(initialPositions, durationOffset));
+            UpdateButtonState();
+            ExecuteAnimation(animationEventUp);
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (!_interactable) return;
+            selectionState = SelectionState.Highlighted;
+            return;//leaving to check while refactoring
+            if (activeColorTint)
+            {
+                UpdateColor(blockColors.highlightedColor);
+            }
+
+            ExecuteAnimation(animationEventEnter);
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (!_interactable || selectionState == SelectionState.Selected) return;
+            selectionState = SelectionState.Normal;
+            return;//leaving to check while refactoring
+            if (applyOffsetOnChildren && initialPositions.Length > 0)
+                offsetCoroutine = StartCoroutine(OffsetBalanceUp(initialPositions, durationOffset));
+            if (activeColorTint)
+            {
+                UpdateColor(blockColors.normalColor);
+            }
+
+            ExecuteAnimation(animationEventExit);
+        }
+
+        public void OnDeselect(BaseEventData eventData)
+        {
+            if (!_interactable) return;
+            selectionState = SelectionState.Normal;
+        }
+        #endregion
+
+        #region StateTransitions
         protected void UpdateButtonState()
         {
+            SelectionState currentState = _interactable ? selectionState : SelectionState.Disabled;
             if (activeColorTint)
-                HandleColorTintTransition();
+                HandleColorTintTransition(currentState);
             if (activeSpriteSwap)
                 HandleSpriteSwapTransition();
             if (activeAnimation)
                 HandleAnimationTransition();
         }
 
-        #region Handles Transitions
-
-        private void HandleColorTintTransition()
+        #region ColorTransitions
+        private void HandleColorTintTransition(SelectionState state)
         {
-            if (isPressed)
+            Color color = Color.white;
+            switch (state)
             {
-                UpdateColorBlock(blockColors.pressedColor);
-                //StartColorTintCoroutine(blockColors.pressedColor);
-                return;
+                case SelectionState.Normal:
+                    color = blockColors.normalColor;
+                    break;
+                case SelectionState.Highlighted:
+                    color = blockColors.highlightedColor;
+                    break;
+                case SelectionState.Pressed:
+                    color = blockColors.pressedColor;
+                    break;
+                case SelectionState.Selected:
+                    color = blockColors.selectedColor;
+                    break;
+                case SelectionState.Disabled:
+                    color = blockColors.disabledColor;
+                    break;
             }
 
-            SetColorInteractable();
+            UpdateColor(color);
+
+            if(changeChildrenColor) UpdateChildGraphicsColor(color, childrenColorOpacityOnly);
+            InvertColorText(color);
         }
+
+        public void UpdateColor(Color targetColor) => targetGraphic.CrossFadeColor(targetColor, blockColors.fadeDuration, true, true);
+
+        private void UpdateChildGraphicsColor(Color targetColor, bool opacityOnly = false)
+        {
+            Action<Graphic> crossFade =
+                opacityOnly ? (graphic) => graphic.CrossFadeAlpha(targetColor.a, blockColors.fadeDuration, true)
+                : (graphic) => graphic.CrossFadeColor(targetColor, blockColors.fadeDuration, true, true);
+
+            for (int i = 0; i < graphics.Length; i++)
+                crossFade(graphics[i]);
+        }
+
+        public void InvertColorText(Color targetColor)
+        {
+            // Refactor
+            if (!applyInvertColorOnTexts) return;
+            var invertedColor = Color.white - targetColor;
+            invertedColor.a = targetColor.a;
+
+            UpdateTextsColor(invertedColor);
+        }
+
+        private void UpdateTextsColor(Color currentColor)
+        {
+            var texts = GetComponentsInChildren<TMP_Text>();
+            foreach (var text in texts)
+                text.CrossFadeColor(currentColor, blockColors.fadeDuration, true, true);
+        }
+        #endregion
+
+        #region SpriteTransitions
 
         private void HandleSpriteSwapTransition()
         {
@@ -177,118 +327,14 @@ namespace CustomButton
 
             SetSprite(targetImage, sprite);
         }
+        private void SetSprite(Image targetImage, Sprite sprite) =>
+            targetImage.overrideSprite = sprite;
+        #endregion
 
+        #region AnimationTransitions
         private void HandleAnimationTransition()
         {
             if (!activeAnimation && !isPressed) return;
-        }
-
-        #endregion
-
-        private void StartColorTintCoroutine(Color targetColor)
-        {
-            UpdateColorBlock(targetColor);
-            if (!applyOpacityOnChildren) return;
-            opacityLerpCoroutine = StartCoroutine(
-                SmoothOpacityByGraphics(
-                    graphics,
-                    targetColor,
-                    blockColors.fadeDuration));
-        }
-
-        public void CheckInverterColorText()
-        {
-            // Refactor
-            if (!applyInvertColorOnTexts) return;
-            var colors1 = Color.white - targetGraphic.color;
-            var colors2 = Color.white - blockColors.normalColor;
-            var result = colors1 + colors2;
-            targetColorBlend = Color.white - result;
-            targetColorBlend.a = 1;
-            UpdateTextColor(Color.white - targetColorBlend);
-        }
-
-        private void UpdateTextColor(Color currentColor)
-        {
-            currentColor.a = 1f;
-            var texts = GetComponentsInChildren<TMP_Text>();
-            foreach (var text in texts)
-                text.color = currentColor;
-        }
-
-        public void UpdateColorBlock(Color targetColor)
-        {
-            targetGraphic.CrossFadeColor(targetColor, blockColors.fadeDuration, true, true);
-            CheckInverterColorText();
-        }
-
-        public void OnTransformChildrenChanged()
-        {
-            GetChildren();
-            UpdateButtonState();
-        }
-
-        public void OnSubmit(BaseEventData eventData)
-        {
-            if (!_interactable) return;
-            onClick?.Invoke();
-        }
-
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            if (!_interactable) return;
-            EventSystem.current.SetSelectedGameObject(gameObject);
-            onClick?.Invoke();
-        }
-
-        public void OnPointerDown(PointerEventData eventData)
-        {
-            if (!_interactable) return;
-            isPressed = true;
-            if (applyOffsetOnChildren && offsetCoroutine == null)
-                offsetCoroutine = StartCoroutine(OffsetBalanceDown(offsetVectorChildren, durationOffset));
-            UpdateButtonState();
-            ExecuteAnimation(animationEventDown);
-        }
-
-        public void OnPointerUp(PointerEventData eventData)
-        {
-            if (!_interactable) return;
-            isPressed = false;
-            if (applyOffsetOnChildren)
-                offsetCoroutine = StartCoroutine(OffsetBalanceUp(initialPositions, durationOffset));
-            UpdateButtonState();
-            ExecuteAnimation(animationEventUp);
-        }
-
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            if (!_interactable) return;
-            if (activeColorTint)
-            {
-                UpdateColorBlock(blockColors.highlightedColor);
-            }
-
-            ExecuteAnimation(animationEventEnter);
-        }
-
-        public void OnPointerExit(PointerEventData eventData)
-        {
-            if (!_interactable) return;
-            if (applyOffsetOnChildren && initialPositions.Length > 0)
-                offsetCoroutine = StartCoroutine(OffsetBalanceUp(initialPositions, durationOffset));
-            if (activeColorTint)
-            {
-                UpdateColorBlock(blockColors.normalColor);
-            }
-
-            ExecuteAnimation(animationEventExit);
-        }
-
-        public void OnDeselect(BaseEventData eventData)
-        {
-            if (!_interactable) return;
-            Debug.Log("deselect");
         }
 
         private void ExecuteAnimation(AnimationPreset currentAnimation = null)
@@ -305,78 +351,7 @@ namespace CustomButton
                 };
             }
         }
-
-        private void SetColorInteractable()
-        {
-            if (applyOpacityOnChildren)
-            {
-                Color targetColor;
-                targetColor = _interactable ? blockColors.normalColor : blockColors.disabledColor;
-                opacityLerpCoroutine = StartCoroutine(
-                    SmoothOpacityByColor(
-                        graphics,
-                        targetColor,
-                        blockColors.fadeDuration));
-            }
-
-            UpdateColorBlock(_interactable ? blockColors.normalColor : blockColors.disabledColor);
-        }
-
-        #region Offset Children Animation
-
-        private static IEnumerator SmoothOpacityByGraphics(IReadOnlyList<Graphic> graphics, Color targetColor,
-            float duration)
-        {
-            var elapsedTime = 0f;
-
-            while (elapsedTime < duration)
-            {
-                elapsedTime += Time.deltaTime;
-                var t = Mathf.Clamp01(elapsedTime / duration);
-
-                for (var i = 1; i < graphics.Count; i++)
-                {
-                    var currentgraphic = graphics[i];
-
-
-                    /* Only change alpha */
-
-                    currentgraphic.color = new Color(
-                        currentgraphic.color.r,
-                        currentgraphic.color.g,
-                        currentgraphic.color.b,
-                        Mathf.Lerp(currentgraphic.color.a, targetColor.a, t));
-                }
-
-                yield return null;
-            }
-        }
-
-        private IEnumerator SmoothOpacityByColor(IReadOnlyList<Graphic> startColor, Color targetColor, float duration)
-        {
-            var elapsedTime = 0f;
-
-            while (elapsedTime < duration)
-            {
-                elapsedTime += Time.deltaTime;
-                var t = Mathf.Clamp01(elapsedTime / duration);
-
-                for (var i = 1; i < graphics.Length; i++)
-                {
-                    var currentgraphic = graphics[i];
-
-                    /* Only change alpha */
-
-                    currentgraphic.color = new Color(
-                        currentgraphic.color.r,
-                        currentgraphic.color.g,
-                        currentgraphic.color.b,
-                        Mathf.Lerp(startColor[i].color.a, targetColor.a, t));
-                }
-            }
-
-            yield return null;
-        }
+        #endregion
 
         #endregion
 
@@ -511,12 +486,12 @@ namespace CustomButton
 
         #endregion
     }
-}
-public enum SelectionState
-{
-    Normal,
-    Highlighted,
-    Pressed,
-    Selected,
-    Disabled
+    public enum SelectionState
+    {
+        Normal,
+        Highlighted,
+        Pressed,
+        Selected,
+        Disabled
+    }
 }
