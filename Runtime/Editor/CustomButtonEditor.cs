@@ -65,7 +65,7 @@ namespace CustomButton
             presetEvtExitProperty = serializedObject.FindProperty("animationEventExit");
             //Tab System
             activeColorTintProperty = serializedObject.FindProperty("activeColorTint");
-            activeSpriteSwapProperty = serializedObject.FindProperty("activeSpriteSwap");
+            activeSpriteSwapProperty = serializedObject.FindProperty(nameof(CustomButtonBase.activeSpriteSwap));
             activeAnimationProperty = serializedObject.FindProperty("activeAnimation");
             selectedTab = EditorPrefs.GetInt(GetGameObjectKey(target), 0);
             SelectTab(selectedTab);
