@@ -235,7 +235,8 @@ namespace CustomButton
         public void OnPointerClick(PointerEventData eventData)
         {
             if (!_interactable) return;
-            OnClick();
+            EventSystem.current.SetSelectedGameObject(gameObject);
+            onClick?.Invoke();
         }
 
         public void OnPointerDown(PointerEventData eventData)
@@ -280,6 +281,12 @@ namespace CustomButton
             }
 
             ExecuteAnimation(animationEventExit);
+        }
+
+        public void OnDeselect(BaseEventData eventData)
+        {
+            if (!_interactable) return;
+            Debug.Log("deselect");
         }
 
         private void ExecuteAnimation(AnimationPreset currentAnimation = null)
@@ -502,4 +509,12 @@ namespace CustomButton
 
         #endregion
     }
+}
+public enum SelectionState
+{
+    Normal,
+    Highlighted,
+    Pressed,
+    Selected,
+    Disabled
 }
