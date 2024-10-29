@@ -114,6 +114,7 @@ namespace CustomButton
         #region Button Default Events
 
         private bool isPressed;
+        private bool isSelected;
         public Button.ButtonClickedEvent onClick = new();
 
         #endregion
@@ -176,6 +177,7 @@ namespace CustomButton
         {
             if (!_interactable) return;
             selectionState = SelectionState.Selected;
+            isSelected = true;
             EventSystem.current.SetSelectedGameObject(gameObject);
             onClick?.Invoke();
         }
@@ -207,7 +209,7 @@ namespace CustomButton
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (!_interactable) return;
+            if (!_interactable || isSelected) return;
             selectionState = SelectionState.Highlighted;
             return;//leaving to check while refactoring
             if (activeColorTint)
@@ -220,7 +222,7 @@ namespace CustomButton
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            if (!_interactable || selectionState == SelectionState.Selected) return;
+            if (!_interactable || isSelected) return;
             selectionState = SelectionState.Normal;
             return;//leaving to check while refactoring
             if (applyOffsetOnChildren && initialPositions.Length > 0)
@@ -236,6 +238,7 @@ namespace CustomButton
         public void OnDeselect(BaseEventData eventData)
         {
             if (!_interactable) return;
+            isSelected = false;
             selectionState = SelectionState.Normal;
         }
         #endregion
