@@ -260,25 +260,15 @@ namespace CustomButton
         #region ColorTransitions
         private void HandleColorTintTransition(SelectionState state)
         {
-            Color color = Color.white;
-            switch (state)
+            Color color = state switch
             {
-                case SelectionState.Normal:
-                    color = blockColors.normalColor;
-                    break;
-                case SelectionState.Highlighted:
-                    color = blockColors.highlightedColor;
-                    break;
-                case SelectionState.Pressed:
-                    color = blockColors.pressedColor;
-                    break;
-                case SelectionState.Selected:
-                    color = blockColors.selectedColor;
-                    break;
-                case SelectionState.Disabled:
-                    color = blockColors.disabledColor;
-                    break;
-            }
+                SelectionState.Normal => blockColors.normalColor,
+                SelectionState.Highlighted => blockColors.highlightedColor,
+                SelectionState.Pressed => blockColors.pressedColor,
+                SelectionState.Selected => blockColors.selectedColor,
+                SelectionState.Disabled => blockColors.disabledColor,
+                _ => Color.white
+            };
 
             UpdateColor(color);
 
