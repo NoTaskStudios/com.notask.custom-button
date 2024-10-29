@@ -249,8 +249,9 @@ namespace CustomButton
         #endregion
 
         #region StateTransitions
-        protected void UpdateButtonState()
+        public void UpdateButtonState()
         {
+            ResetTransitions();
             SelectionState currentState = _interactable ? selectionState : SelectionState.Disabled;
             if (activeColorTint)
                 HandleColorTintTransition(currentState);
@@ -258,6 +259,14 @@ namespace CustomButton
                 HandleSpriteSwapTransition(currentState);
             if (activeAnimation)
                 HandleAnimationTransition(currentState);
+        }
+
+        private void ResetTransitions()
+        {
+            targetGraphic?.CrossFadeColor(Color.white, 0, true, true);
+            var targetImage = targetGraphic as Image;
+            if (targetImage) SetSprite(targetImage, null);
+            currentAnimation?.StopAnimation(this);
         }
 
         #region ColorTransitions
@@ -279,7 +288,7 @@ namespace CustomButton
             InvertColorText(color);
         }
 
-        public void UpdateColor(Color targetColor) => targetGraphic.CrossFadeColor(targetColor, blockColors.fadeDuration, true, true);
+        private void UpdateColor(Color targetColor) => targetGraphic?.CrossFadeColor(targetColor, blockColors.fadeDuration, true, true);
 
         private void UpdateChildGraphicsColor(Color targetColor, bool opacityOnly = false)
         {
@@ -291,7 +300,7 @@ namespace CustomButton
                 crossFade(graphics[i]);
         }
 
-        public void InvertColorText(Color targetColor)
+        private void InvertColorText(Color targetColor)
         {
             // Refactor
             if (!applyInvertColorOnTexts) return;
