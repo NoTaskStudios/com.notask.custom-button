@@ -814,7 +814,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2047661209}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -840,8 +840,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   activeColorTint: 1
-  activeSpriteSwap: 1
-  activeAnimation: 0
+  activeSpriteSwap: 0
+  activeAnimation: 1
   changeChildrenColor: 0
   childrenColorOpacityOnly: 0
   applyBlinkHighlighted: 0
@@ -867,11 +867,12 @@ MonoBehaviour:
   graphics:
   - {fileID: 2047661212}
   - {fileID: 1309198388}
-  eventsOnInteractable: []
-  animationEventDown: {fileID: 11400000, guid: 00fbbcd05a2027140abb1da1ea9edbc1, type: 2}
-  animationEventUp: {fileID: 0}
-  animationEventEnter: {fileID: 0}
-  animationEventExit: {fileID: 0}
+  normalAnimation: {fileID: 0}
+  highlightedAnimation: {fileID: 11400000, guid: 00fbbcd05a2027140abb1da1ea9edbc1, type: 2}
+  pressedAnimation: {fileID: 11400000, guid: 9c7ef65eabc33dd468963fda4f0ffc04, type: 2}
+  selectedAnimation: {fileID: 11400000, guid: 1f33defe98240df40b005ae16711d9fe, type: 2}
+  disabledAnimation: {fileID: 0}
+  currentAnimation: {fileID: 0}
   offsetVectorChildren: {x: 0, y: 0}
   durationOffset: 0.1
   onClick:

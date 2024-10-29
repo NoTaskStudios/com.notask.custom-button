@@ -37,7 +37,7 @@ namespace CustomButton
             {
                 if (_interactable == value) return;
                 _interactable = value;
-                UpdateButtonState();
+                selectionState = _interactable ? SelectionState.Normal : SelectionState.Disabled;
             }
         }
 
@@ -100,10 +100,13 @@ namespace CustomButton
 
         #region Animations Presets
 
-        public AnimationPreset animationEventDown;
-        public AnimationPreset animationEventUp;
-        public AnimationPreset animationEventEnter;
-        public AnimationPreset animationEventExit;
+        public AnimationPreset normalAnimation;
+        public AnimationPreset highlightedAnimation;
+        public AnimationPreset pressedAnimation;
+        public AnimationPreset selectedAnimation;
+        public AnimationPreset disabledAnimation;
+
+        private AnimationPreset currentAnimation;
 
         #endregion
 
@@ -136,6 +139,7 @@ namespace CustomButton
         private void OnDisable()
         {
             onClick.RemoveListener(OnClick);
+            currentAnimation?.StopAnimation(this);
         }
 
         private void Start()
@@ -192,21 +196,20 @@ namespace CustomButton
             if (applyOffsetOnChildren && offsetCoroutine == null)
                 offsetCoroutine = StartCoroutine(OffsetBalanceDown(offsetVectorChildren, durationOffset));
             UpdateButtonState();
-            ExecuteAnimation(animationEventDown);
+            ExecuteAnimation(pressedAnimation);
         }
 
         //Goes before PointerUp
         public void OnPointerUp(PointerEventData eventData)
         {
             if (!_interactable) return;
-            Debug.Log("up");
             selectionState = SelectionState.Normal;
             return;//leaving to check while refactoring
             isPressed = false;
             if (applyOffsetOnChildren)
                 offsetCoroutine = StartCoroutine(OffsetBalanceUp(initialPositions, durationOffset));
             UpdateButtonState();
-            ExecuteAnimation(animationEventUp);
+            ExecuteAnimation(selectedAnimation);
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -219,7 +222,7 @@ namespace CustomButton
                 UpdateColor(blockColors.highlightedColor);
             }
 
-            ExecuteAnimation(animationEventEnter);
+            ExecuteAnimation(highlightedAnimation);
         }
 
         public void OnPointerExit(PointerEventData eventData)
@@ -234,7 +237,7 @@ namespace CustomButton
                 UpdateColor(blockColors.normalColor);
             }
 
-            ExecuteAnimation(animationEventExit);
+            ExecuteAnimation(currentAnimation);
         }
 
         public void OnDeselect(BaseEventData eventData)
@@ -254,7 +257,7 @@ namespace CustomButton
             if (activeSpriteSwap)
                 HandleSpriteSwapTransition(currentState);
             if (activeAnimation)
-                HandleAnimationTransition();
+                HandleAnimationTransition(currentState);
         }
 
         #region ColorTransitions
@@ -329,24 +332,27 @@ namespace CustomButton
         #endregion
 
         #region AnimationTransitions
-        private void HandleAnimationTransition()
+        private void HandleAnimationTransition(SelectionState state)
         {
-            if (!activeAnimation && !isPressed) return;
+            AnimationPreset animation = state switch
+            {
+                SelectionState.Normal => normalAnimation,
+                SelectionState.Highlighted => highlightedAnimation,
+                SelectionState.Pressed => pressedAnimation,
+                SelectionState.Selected => selectedAnimation,
+                SelectionState.Disabled => disabledAnimation,
+                _ => null
+            };
+            ExecuteAnimation(animation);
         }
 
-        private void ExecuteAnimation(AnimationPreset currentAnimation = null)
+        private void ExecuteAnimation(AnimationPreset animation = null)
         {
-            if (currentAnimation == null || isPlayingAnimationEvt) return;
-            if (activeAnimation && !isPlayingAnimationEvt)
-            {
-                animationCoroutine = currentAnimation.animationStyle switch
-                {
-                    AnimationStyle.Shake => StartCoroutine(ShakeAnimation(currentAnimation)),
-                    AnimationStyle.Scale => StartCoroutine(ScaleAnimation(currentAnimation)),
-                    AnimationStyle.Rotate => StartCoroutine(RotateAnimation(currentAnimation)),
-                    _ => animationCoroutine
-                };
-            }
+            currentAnimation?.StopAnimation(this);
+            if (animation == null || isPlayingAnimationEvt) return;
+
+            currentAnimation = animation;
+            animation.StartAnimation(this);
         }
         #endregion
 
@@ -416,69 +422,6 @@ namespace CustomButton
             {
                 graphics[i].rectTransform.anchoredPosition = initialPositions[i] + offset;
             }
-        }
-
-        #endregion
-
-        #region Animations IEnumerators
-
-        private IEnumerator ShakeAnimation(AnimationPreset currentAnimation)
-        {
-            isPlayingAnimationEvt = true;
-            var elapsedTime = 0f;
-            originalPosition = rectTransform.anchoredPosition;
-            while (elapsedTime < currentAnimation.duration)
-            {
-                var x = originalPosition.x + Mathf.Sin(Time.time * currentAnimation.speed) * currentAnimation.magnitude;
-                var y = originalPosition.y + Mathf.Cos(Time.time * currentAnimation.speed) * currentAnimation.magnitude;
-
-                rectTransform.anchoredPosition = new Vector3(x, y, originalPosition.z);
-
-                elapsedTime += Time.deltaTime;
-                yield return null;
-            }
-
-            rectTransform.anchoredPosition = originalPosition;
-            animationCoroutine = null;
-            isPlayingAnimationEvt = false;
-        }
-
-        private IEnumerator ScaleAnimation(AnimationPreset currentAnimation)
-        {
-            var elapsedTime = 0f;
-            var originalScale = rectTransform.localScale;
-
-            while (elapsedTime < currentAnimation.duration)
-            {
-                var t = elapsedTime / currentAnimation.duration;
-                transform.localScale = Vector3.Lerp(Vector3.one * currentAnimation.magnitude, originalScale, t);
-
-                elapsedTime += Time.deltaTime * currentAnimation.speed;
-                yield return null;
-            }
-
-            animationCoroutine = null;
-            rectTransform.localScale = originalScale;
-        }
-
-        private IEnumerator RotateAnimation(AnimationPreset currentAnimation)
-        {
-            var elapsedTime = 0f;
-            var originalRotation = rectTransform.rotation;
-
-            while (elapsedTime < currentAnimation.duration)
-            {
-                var rotationAmount = Mathf.Sin(Time.time * currentAnimation.speed) * currentAnimation.magnitude;
-                var rotation = originalRotation * Quaternion.Euler(0f, 0f, rotationAmount);
-
-                rectTransform.rotation = rotation;
-
-                elapsedTime += Time.deltaTime;
-                yield return null;
-            }
-
-            animationCoroutine = null;
-            rectTransform.rotation = originalRotation;
         }
 
         #endregion
