@@ -129,7 +129,7 @@ namespace CustomButton
             //Button ColorTab
             colorTintTab = new VisualElement();
             root.Add(colorTintTab);
-            tabWindow.Add(TabButton("Color Tint", 0, activeColorTintProperty, colorTintTab));
+            tabWindow.Add(TabButton("Color Tint", 0, activeColorTintProperty, colorTintTab, tabWindow));
             //colorTintTab.Add(new Label("color tab"));
             colorTintTab.style.display = DisplayStyle.None;
             PropertyField invertTextColorField = new(invertTextColorProperty);
@@ -150,7 +150,7 @@ namespace CustomButton
             //Button SpriteTab
             spriteSwapTab = new VisualElement();
             root.Add(spriteSwapTab);
-            tabWindow.Add(TabButton("Sprite Swap", 1, activeSpriteSwapProperty, spriteSwapTab));
+            tabWindow.Add(TabButton("Sprite Swap", 1, activeSpriteSwapProperty, spriteSwapTab, tabWindow));
             //spriteSwapTab.Add(new Label("sprite tab"));
             spriteSwapTab.style.display = DisplayStyle.None;
             PropertyField spriteSwap = new(spriteSwapProperty);
@@ -162,7 +162,7 @@ namespace CustomButton
             //Button SpriteTab
             animationTab = new VisualElement();
             root.Add(animationTab);
-            tabWindow.Add(TabButton("Animation", 2, activeAnimationProperty, animationTab));
+            tabWindow.Add(TabButton("Animation", 2, activeAnimationProperty, animationTab, tabWindow));
             //animationTab.Add(new Label("animation tab"));
             animationTab.style.display = DisplayStyle.None;
             PropertyField normalAnimation = new(normalAnimProperty);
@@ -235,16 +235,31 @@ namespace CustomButton
             }
         }
 
-        private VisualElement TabButton(string label, int tabID, SerializedProperty enableProperty, VisualElement tabProperties)
+        private VisualElement TabButton(string label, int tabID, SerializedProperty enableProperty, VisualElement tabProperties, VisualElement tabwindow)
         {
             Button button = new Button();
             button.text = label;
             button.style.flexGrow = 1;
+            button.style.unityTextAlign = TextAnchor.MiddleCenter;
+            
+            button.RegisterCallback<GeometryChangedEvent>(evt =>
+            {
+                Debug.Log(tabwindow.resolvedStyle.width);
+                button.style.unityTextAlign = button.resolvedStyle.width switch
+                {
+                    < 118 and > 95 => TextAnchor.MiddleRight,
+                    >= 118 => TextAnchor.MiddleCenter,
+                    _ => button.style.unityTextAlign
+                };
+                tabwindow.style.flexDirection = tabwindow.resolvedStyle.width <= 326 ?  FlexDirection.Column: FlexDirection.Row;
+            });
+            
             Toggle enableToggle = new Toggle();
             enableToggle.value = enableProperty.boolValue;
             enableToggle.style.width = 14;
             enableToggle.RegisterValueChangedCallback((evt) =>
             {
+                
                 enableProperty.boolValue = evt.newValue;
                 serializedObject.ApplyModifiedProperties();
                 customButton.UpdateButtonState();
