@@ -5,6 +5,7 @@ using CustomButton.Utils;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace CustomButton
@@ -21,7 +22,7 @@ namespace CustomButton
         public bool spriteSwapTransition;
         public bool animationTransition;
         public bool changeChildrenColor;
-        public bool childrenColorOpacityOnly;
+        [FormerlySerializedAs("childrenColorOpacityOnly")] public bool changeChildrenAlpha;
         public bool invertColorOnTexts;
 
         #endregion
@@ -252,17 +253,17 @@ namespace CustomButton
 
             UpdateColor(color);
 
-            if(changeChildrenColor) UpdateChildGraphicsColor(color, childrenColorOpacityOnly);
+            UpdateChildGraphicsColor(color, changeChildrenColor, changeChildrenAlpha);
             InvertColorText(color);
         }
 
         private void UpdateColor(Color targetColor) => targetGraphic?.CrossFadeColor(targetColor, blockColors.fadeDuration, true, true);
 
-        private void UpdateChildGraphicsColor(Color targetColor, bool opacityOnly = false)
+        private void UpdateChildGraphicsColor(Color targetColor,bool changeColor, bool useAlpha = false)
         {
-            Action<Graphic> crossFade =
-                opacityOnly ? (graphic) => graphic.CrossFadeAlpha(targetColor.a, blockColors.fadeDuration, true)
-                : (graphic) => graphic.CrossFadeColor(targetColor, blockColors.fadeDuration, true, true);
+            Action<Graphic> crossFade = null;
+            if(changeColor) crossFade += (graphic) => graphic.CrossFadeColor(targetColor, blockColors.fadeDuration, true, false);
+            if(useAlpha) crossFade += (graphic) => graphic.CrossFadeAlpha(targetColor.a, blockColors.fadeDuration, true);
 
             for (int i = 0; i < graphics.Length; i++)
                 if(graphics[i] != targetGraphic) crossFade(graphics[i]);

@@ -57,13 +57,13 @@ namespace CustomButton
             interactableProperty = serializedObject.FindProperty("_interactable");
             onClickProperty = serializedObject.FindProperty("onClick");
             // General
-            opacityOnChildrenProperty = serializedObject.FindProperty(nameof(CustomButtonBase.childrenColorOpacityOnly));
+            opacityOnChildrenProperty = serializedObject.FindProperty(nameof(CustomButtonBase.changeChildrenAlpha));
             offsetOnChildrenProperty = serializedObject.FindProperty("applyOffsetOnChildren");
             // Color Tint
             targetGraphicProperty = serializedObject.FindProperty("targetGraphic");
             invertTextColorProperty = serializedObject.FindProperty(nameof(CustomButtonBase.invertColorOnTexts));
             childColorProperty = serializedObject.FindProperty(nameof(CustomButtonBase.changeChildrenColor));
-            childAlphaProperty = serializedObject.FindProperty(nameof(CustomButtonBase.childrenColorOpacityOnly));
+            childAlphaProperty = serializedObject.FindProperty(nameof(CustomButtonBase.changeChildrenAlpha));
             blockColorsProperty = serializedObject.FindProperty("blockColors");
             previousNormalColor = ((CustomButtonClass)target).blockColors.normalColor;
             // Sprite Swap
