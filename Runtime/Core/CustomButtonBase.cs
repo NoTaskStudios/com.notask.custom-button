@@ -265,7 +265,7 @@ namespace CustomButton
                 : (graphic) => graphic.CrossFadeColor(targetColor, blockColors.fadeDuration, true, true);
 
             for (int i = 0; i < graphics.Length; i++)
-                crossFade(graphics[i]);
+                if(graphics[i] != targetGraphic) crossFade(graphics[i]);
         }
 
         private void InvertColorText(Color targetColor)
