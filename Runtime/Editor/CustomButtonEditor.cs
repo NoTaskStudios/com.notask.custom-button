@@ -189,7 +189,7 @@ namespace CustomButton
             VisualElement onChangeEvent = OnChangeEvent();
             root.Add(onChangeEvent);
 
-            onTabChanged?.Invoke(selectedTab);
+            VerifyTabs();
 
             return root;
         }
@@ -244,7 +244,6 @@ namespace CustomButton
             
             button.RegisterCallback<GeometryChangedEvent>(evt =>
             {
-                Debug.Log(tabwindow.resolvedStyle.width);
                 button.style.unityTextAlign = button.resolvedStyle.width switch
                 {
                     < 118 and > 95 => TextAnchor.MiddleRight,
