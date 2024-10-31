@@ -8,6 +8,8 @@ namespace CustomButton.Utils
     [CreateAssetMenu(fileName = "new Scale Preset", menuName = "Custom Button/Presets/new Scale Animation", order = 0)]
     public class ScalePreset : CoroutineAnimationPreset
     {
+        [SerializeField] private Vector3 scaleDirection = Vector3.one;
+
         private void Awake()
         {
             duration = 0.1f;
@@ -28,18 +30,22 @@ namespace CustomButton.Utils
         {
             RectTransform rectTransform = (RectTransform)button.transform;
             var originalScale = rectTransform.localScale;
+            var targetScale = originalScale + (scaleDirection * magnitude);
             var elapsedTime = 0f;
+            float startOffset = curveStart;
+            float animationDuration = curveDuration * duration;
 
-            while (elapsedTime < duration)
+            while (elapsedTime < animationDuration)
             {
-                var t = elapsedTime / duration;
-                rectTransform.localScale = Vector3.Lerp(Vector3.one * magnitude, originalScale, t);
+                float currentTime = elapsedTime / duration;
+                float t = curve.Evaluate(currentTime+ startOffset);
+                rectTransform.localScale = Vector3.Lerp(originalScale, targetScale, t);
 
                 elapsedTime += Time.deltaTime * speed;
                 yield return null;
             }
 
-            rectTransform.localScale = originalScale;
+            StopAnimation(button);
         }
     }
 }
