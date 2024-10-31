@@ -241,13 +241,27 @@ namespace CustomButton
 
         private void ResetTransitions()
         {
-            targetGraphic?.CrossFadeColor(Color.white, 0, true, true);
-            var targetImage = targetGraphic as Image;
-            if (targetImage) SetSprite(targetImage, null);
-            currentAnimation?.StopAnimation(this);
-            var texts = GetComponentsInChildren<TMP_Text>();
-            foreach (var text in texts)
-                text.CrossFadeColor(Color.white, blockColors.fadeDuration, true, true);
+            if (!colorTintTransition)
+            {
+                targetGraphic?.CrossFadeColor(Color.white, 0, true, true);
+                Action<Graphic> crossFade = null;
+                crossFade += (graphic) => graphic.CrossFadeColor(Color.white, blockColors.fadeDuration, true, false);
+                crossFade += (graphic) => graphic.CrossFadeAlpha(1, blockColors.fadeDuration, true);
+
+                for (int i = 0; i < graphics.Length; i++)
+                    if (graphics[i] != targetGraphic) crossFade(graphics[i]);
+
+                var texts = GetComponentsInChildren<TMP_Text>();
+                foreach (var text in texts)
+                    text.CrossFadeColor(Color.white, 0, true, true);
+
+            }
+            if (!spriteSwapTransition)
+            {
+                var targetImage = targetGraphic as Image;
+                if (targetImage) SetSprite(targetImage, null);
+            }
+            if(!animationTransition) currentAnimation?.StopAnimation(this);
         }
 
         #region ColorTransitions
