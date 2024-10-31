@@ -40,7 +40,7 @@ namespace CustomButton.Utils
                 yield return null;
             }
 
-            rectTransform.anchoredPosition = originalPosition;
+            StopAnimation(button);
         }
     }
 }
