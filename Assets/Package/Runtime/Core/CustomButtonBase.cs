@@ -89,7 +89,7 @@ namespace CustomButton
 
         #region Coroutines
 
-        private Coroutine clickBufferCoroutine;
+        private Coroutine pointerUpBuffer;
         private WaitForSeconds bufferDelay = new(.2f);
 
         #endregion
@@ -150,10 +150,10 @@ namespace CustomButton
 
         public virtual void OnClick()
         {
-            if(clickBufferCoroutine != null)
+            if(pointerUpBuffer != null)
             {
-                StopCoroutine(clickBufferCoroutine);
-                clickBufferCoroutine = null;
+                StopCoroutine(pointerUpBuffer);
+                pointerUpBuffer = null;
             }
         }
 
@@ -193,7 +193,7 @@ namespace CustomButton
         public void OnPointerUp(PointerEventData eventData)
         {
             if (!_interactable) return;
-            clickBufferCoroutine = StartCoroutine(PointerUpBuffer());
+            pointerUpBuffer = StartCoroutine(PointerUpBuffer());
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -222,7 +222,7 @@ namespace CustomButton
         {
             yield return bufferDelay;
             selectionState = SelectionState.Normal;
-            clickBufferCoroutine = null;
+            pointerUpBuffer = null;
         }
         #endregion
 
