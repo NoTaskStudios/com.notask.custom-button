@@ -189,6 +189,11 @@ namespace CustomButton
             VisualElement onChangeEvent = OnChangeEvent();
             root.Add(onChangeEvent);
 
+            int currentID = 0;
+            if(activeSpriteSwapProperty.boolValue) currentID = 1;
+            else if (activeAnimationProperty.boolValue) currentID = 2;
+            selectedTab = currentID;
+            ChangeTab(selectedTab);
             VerifyTabs();
 
             return root;
