@@ -3,10 +3,14 @@ namespace CustomButton.Utils
 {
     public abstract class AnimationPreset : ScriptableObject 
     {
-        [Range(0.1f,1f)] public float duration;
-        [Range(0.1f,99f)] public float speed;
-        [Range(1.1f,50f)] public float magnitude;
-        public AnimationCurve curve = AnimationCurve.Constant(0, 1, 1);
+        [Min(0.1f)] public float duration;
+        [Min(0.1f)] public float speed;
+        public float magnitude;
+        public AnimationCurve curve = AnimationCurve.Linear(0, 0, 1, 1);
+
+        protected float curveStart => curve[0].time;
+        protected float curveEnd => curve.keys[^1].time;
+        protected float curveDuration => curveEnd - curveStart;
 
         public abstract void StartAnimation(CustomButtonBase button);
         public abstract void StopAnimation(CustomButtonBase button);
