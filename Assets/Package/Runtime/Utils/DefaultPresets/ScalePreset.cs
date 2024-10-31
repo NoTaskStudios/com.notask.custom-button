@@ -5,7 +5,7 @@ using System;
 
 namespace CustomButton.Utils
 {
-    [CreateAssetMenu(fileName = "new Scale Preset", menuName = "Custom Button/Presets/new Scale Animation", order = 0)]
+    [CreateAssetMenu(fileName = "new Scale Preset", menuName = "Custom Button/Presets/Scale Animation", order = 0)]
     public class ScalePreset : CoroutineAnimationPreset
     {
         [SerializeField] private Vector3 scaleDirection = Vector3.one;

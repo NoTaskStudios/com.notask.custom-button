@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace CustomButton.Utils
 {
-    [CreateAssetMenu(fileName = "new Shake Preset", menuName = "Custom Button/Presets/new Shake Animation", order = 0)]
+    [CreateAssetMenu(fileName = "new Shake Preset", menuName = "Custom Button/Presets/Shake Animation", order = 0)]
     public class ShakePreset : CoroutineAnimationPreset
     {
         private void Awake()
