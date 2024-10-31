@@ -6,6 +6,7 @@ namespace CustomButton.Utils
     [CreateAssetMenu(fileName = "new Rotate Preset", menuName = "Custom Button/Presets/new Rotate Animation", order = 0)]
     public class RotatePreset : CoroutineAnimationPreset
     {
+        [SerializeField] private Vector3 rotationAxis = Vector3.forward;
         private void Awake()
         {
             duration = 0.2f;
@@ -16,29 +17,32 @@ namespace CustomButton.Utils
         public override void StartAnimation(CustomButtonBase button)
         {
             RectTransform rectTransform = (RectTransform)button.transform;
-            var originalRotation = rectTransform.rotation;
+            var originalRotation = rectTransform.eulerAngles;
             base.StartAnimation(button);
 
-            stopSequence[button] += () => rectTransform.rotation = originalRotation;
+            stopSequence[button] += () => rectTransform.eulerAngles = originalRotation;
         }
 
         protected override IEnumerator AnimationCoroutine(CustomButtonBase button)
         {
             RectTransform rectTransform = (RectTransform)button.transform;
+            var originalRotation = rectTransform.eulerAngles;
+            var targetRotation = originalRotation + (rotationAxis * magnitude);
             var elapsedTime = 0f;
-            var originalRotation = rectTransform.rotation;
+            float startOffset = curveStart;
+            float animationDuration = curveDuration;
 
-            while (elapsedTime < duration)
+            while (elapsedTime < duration || loopAnimation)
             {
-                var rotationAmount = Mathf.Sin(Time.time * speed) * magnitude;
-                var rotation = originalRotation * Quaternion.Euler(0f, 0f, rotationAmount);
-
-                rectTransform.rotation = rotation;
+                float currentTime = elapsedTime / duration;
+                float t = curve.Evaluate((currentTime / animationDuration) + startOffset);
+                rectTransform.eulerAngles = originalRotation + (targetRotation - originalRotation) * t;
 
                 elapsedTime += Time.deltaTime;
                 yield return null;
             }
-            rectTransform.rotation = originalRotation;
+
+            StopAnimation(button);
         }
     }
 }

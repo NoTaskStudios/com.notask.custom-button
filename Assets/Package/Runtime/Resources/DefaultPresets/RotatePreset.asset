@@ -12,7 +12,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d75f6701243c6440a8f3030bbc0e7e9, type: 3}
   m_Name: RotatePreset
   m_EditorClassIdentifier: 
-  animationStyle: 2
   duration: 0.2
+  loopAnimation: 0
   speed: 50
   magnitude: 3
+  curve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 5.1974006
+      outSlope: 5.1974006
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.073545545
+    - serializedVersion: 3
+      time: 0.5
+      value: 0
+      inSlope: -6.7917433
+      outSlope: -6.7917433
+      tangentMode: 0
+      weightedMode: 3
+      inWeight: 0.5061729
+      outWeight: 0.5295173
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 4.6370196
+      outSlope: 8.1229105
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.068587184
+      outWeight: 0
+    m_PreInfinity: 1
+    m_PostInfinity: 0
+    m_RotationOrder: 4
+  rotationAxis: {x: 0, y: 0, z: 1}
