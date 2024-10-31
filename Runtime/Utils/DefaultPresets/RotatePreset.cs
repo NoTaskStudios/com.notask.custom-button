@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace CustomButton.Utils
 {
-    [CreateAssetMenu(fileName = "new Rotate Preset", menuName = "Custom Button/Presets/new Rotate Animation", order = 0)]
+    [CreateAssetMenu(fileName = "new Rotate Preset", menuName = "Custom Button/Presets/Rotate Animation", order = 0)]
     public class RotatePreset : CoroutineAnimationPreset
     {
         [SerializeField] private Vector3 rotationAxis = Vector3.forward;
