@@ -4,6 +4,7 @@ namespace CustomButton.Utils
     public abstract class AnimationPreset : ScriptableObject 
     {
         [Min(0.1f)] public float duration;
+        public bool loopAnimation = false;
         [Min(0.1f)] public float speed;
         public float magnitude;
         public AnimationCurve curve = AnimationCurve.Linear(0, 0, 1, 1);

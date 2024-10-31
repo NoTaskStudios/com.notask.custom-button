@@ -33,15 +33,15 @@ namespace CustomButton.Utils
             var targetScale = originalScale + (scaleDirection * magnitude);
             var elapsedTime = 0f;
             float startOffset = curveStart;
-            float animationDuration = curveDuration * duration;
+            float animationDuration = curveDuration;
 
-            while (elapsedTime < animationDuration)
+            while (elapsedTime < duration || loopAnimation)
             {
                 float currentTime = elapsedTime / duration;
-                float t = curve.Evaluate(currentTime+ startOffset);
-                rectTransform.localScale = Vector3.Lerp(originalScale, targetScale, t);
+                float t = curve.Evaluate((currentTime / animationDuration) + startOffset);
+                rectTransform.localScale = originalScale + (targetScale - originalScale) * t;
 
-                elapsedTime += Time.deltaTime * speed;
+                elapsedTime += Time.deltaTime;
                 yield return null;
             }
 

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: ScalePreset
   m_EditorClassIdentifier: 
   duration: 0.1
+  loopAnimation: 0
   speed: 1
   magnitude: 0.2
   curve:
@@ -45,7 +46,7 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
+    m_PreInfinity: 1
+    m_PostInfinity: 1
     m_RotationOrder: 4
   scaleDirection: {x: 1, y: 1, z: 0}
