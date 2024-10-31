@@ -89,10 +89,8 @@ namespace CustomButton
 
         #region Coroutines
 
-        private Coroutine colorLerpCoroutine;
-        private Coroutine opacityLerpCoroutine;
-        private Coroutine animationCoroutine;
-        private Coroutine offsetCoroutine;
+        private Coroutine clickBufferCoroutine;
+        private WaitForSeconds bufferDelay = new(.2f);
 
         #endregion
 
@@ -152,7 +150,11 @@ namespace CustomButton
 
         public virtual void OnClick()
         {
-
+            if(clickBufferCoroutine != null)
+            {
+                StopCoroutine(clickBufferCoroutine);
+                clickBufferCoroutine = null;
+            }
         }
 
         private void GetChildren() => graphics = GetComponentsInChildren<Graphic>();
@@ -191,7 +193,7 @@ namespace CustomButton
         public void OnPointerUp(PointerEventData eventData)
         {
             if (!_interactable) return;
-            selectionState = SelectionState.Normal;
+            clickBufferCoroutine = StartCoroutine(PointerUpBuffer());
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -211,6 +213,16 @@ namespace CustomButton
             if (!_interactable) return;
             isSelected = false;
             selectionState = SelectionState.Normal;
+        }
+        #endregion
+
+        #region Pointer up buffer
+
+        private IEnumerator PointerUpBuffer()
+        {
+            yield return bufferDelay;
+            selectionState = SelectionState.Normal;
+            clickBufferCoroutine = null;
         }
         #endregion
 
@@ -338,7 +350,7 @@ namespace CustomButton
 
         #region TODO Refactore
 
-        private IEnumerator OffsetBalanceUp(IReadOnlyList<Vector2> initialPositions, float duration)
+        /*private IEnumerator OffsetBalanceUp(IReadOnlyList<Vector2> initialPositions, float duration)
         {
             var elapsedTime = 0f;
             while (elapsedTime < duration)
@@ -400,7 +412,7 @@ namespace CustomButton
             {
                 graphics[i].rectTransform.anchoredPosition = initialPositions[i] + offset;
             }
-        }
+        }*/
 
         #endregion
     }
