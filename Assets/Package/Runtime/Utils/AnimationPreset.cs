@@ -5,7 +5,6 @@ namespace CustomButton.Utils
     {
         [Min(0.1f)] public float duration;
         [Tooltip("Make sure to verify the AnimationCurve loop type")]public bool loopAnimation = false;
-        [Min(0.1f)] public float speed;
         public float magnitude;
         public AnimationCurve curve = AnimationCurve.Linear(0, 0, 1, 1);
 

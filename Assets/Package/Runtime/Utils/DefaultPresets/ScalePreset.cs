@@ -10,13 +10,6 @@ namespace CustomButton.Utils
     {
         [SerializeField] private Vector3 scaleDirection = Vector3.one;
 
-        private void Awake()
-        {
-            duration = 0.1f;
-            speed = 1f;
-            magnitude = 1.2f;
-        }
-
         public override void StartAnimation(CustomButtonBase button)
         {
             RectTransform rectTransform = (RectTransform)button.transform;
