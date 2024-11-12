@@ -7,12 +7,6 @@ namespace CustomButton.Utils
     public class RotatePreset : CoroutineAnimationPreset
     {
         [SerializeField] private Vector3 rotationAxis = Vector3.forward;
-        private void Awake()
-        {
-            duration = 0.2f;
-            speed = 50f;
-            magnitude = 3f;
-        }
 
         public override void StartAnimation(CustomButtonBase button)
         {
