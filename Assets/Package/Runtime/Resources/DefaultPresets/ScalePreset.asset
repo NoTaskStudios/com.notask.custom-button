@@ -14,7 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   duration: 0.1
   loopAnimation: 0
-  speed: 1
   magnitude: 0.2
   curve:
     serializedVersion: 2
