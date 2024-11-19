@@ -10,13 +10,13 @@ namespace CustomButton.Utils
         [SerializeField] bool moveChildren = true;
         [SerializeField] private Vector2 moveDirection = Vector2.one;
 
-        public override void StartAnimation(CustomButtonBase button)
+        public override void StartAnimation(MonoBehaviour button)
         {
             if (moveChildren) ChildrenAnimation(button);
             else ButtonAnimation(button);
         }
 
-        private void ButtonAnimation(CustomButtonBase button)
+        private void ButtonAnimation(MonoBehaviour button)
         {
             RectTransform rectTransform = (RectTransform)button.transform;
             var originalPosition = rectTransform.anchoredPosition;
@@ -25,7 +25,7 @@ namespace CustomButton.Utils
             stopSequence[button] += () => rectTransform.anchoredPosition = originalPosition;
         }
 
-        private void ChildrenAnimation(CustomButtonBase button)
+        private void ChildrenAnimation(MonoBehaviour button)
         {
             List<MoveData> transforms = new();
             for (int i = 0; i < button.transform.childCount; i++)
@@ -48,7 +48,7 @@ namespace CustomButton.Utils
             };
         }
 
-        protected override IEnumerator AnimationCoroutine(CustomButtonBase button)
+        protected override IEnumerator AnimationCoroutine(MonoBehaviour button)
         {
             List<MoveData> transforms = new();
             if (moveChildren)

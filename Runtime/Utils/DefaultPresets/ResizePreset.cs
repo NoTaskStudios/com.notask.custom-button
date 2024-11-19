@@ -8,7 +8,7 @@ public class ResizePreset : CoroutineAnimationPreset
 {
     [SerializeField] private Vector2 resizeDirection = Vector2.one;
 
-    public override void StartAnimation(CustomButtonBase button)
+    public override void StartAnimation(MonoBehaviour button)
     {
         RectTransform rectTransform = (RectTransform)button.transform;
         var originalSize = rectTransform.sizeDelta;
@@ -17,7 +17,7 @@ public class ResizePreset : CoroutineAnimationPreset
         stopSequence[button] += () => rectTransform.sizeDelta = originalSize;
     }
 
-    protected override IEnumerator AnimationCoroutine(CustomButtonBase button)
+    protected override IEnumerator AnimationCoroutine(MonoBehaviour button)
     {
         RectTransform rectTransform = (RectTransform)button.transform;
         var originalSize = rectTransform.sizeDelta;

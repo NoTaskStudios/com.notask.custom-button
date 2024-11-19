@@ -7,7 +7,7 @@ namespace CustomButton.Utils
     {
         [Header("Above parameters don't work"),SerializeField, Space(10)] AnimationPreset[] presets;
 
-        public override void StartAnimation(CustomButtonBase button)
+        public override void StartAnimation(MonoBehaviour button)
         {
             for (int i = 0; i < presets.Length; i++)
             {
@@ -18,7 +18,7 @@ namespace CustomButton.Utils
             }
         }
 
-        public override void StopAnimation(CustomButtonBase button)
+        public override void StopAnimation(MonoBehaviour button)
         {
             for (int i = 0; i < presets.Length; i++)
             {
