@@ -5,15 +5,10 @@ using System;
 
 namespace CustomButton.Utils
 {
-    [CreateAssetMenu(fileName = "new Scale Preset", menuName = "Custom Button/Presets/new Scale Animation", order = 0)]
+    [CreateAssetMenu(fileName = "new Scale Preset", menuName = "Custom Button/Presets/Scale Animation", order = 0)]
     public class ScalePreset : CoroutineAnimationPreset
     {
-        private void Awake()
-        {
-            duration = 0.1f;
-            speed = 1f;
-            magnitude = 1.2f;
-        }
+        [SerializeField] private Vector3 scaleDirection = Vector3.one;
 
         public override void StartAnimation(CustomButtonBase button)
         {
@@ -28,18 +23,22 @@ namespace CustomButton.Utils
         {
             RectTransform rectTransform = (RectTransform)button.transform;
             var originalScale = rectTransform.localScale;
+            var targetScale = originalScale + (scaleDirection * magnitude);
             var elapsedTime = 0f;
+            float startOffset = curveStart;
+            float animationDuration = curveDuration;
 
-            while (elapsedTime < duration)
+            while (elapsedTime < duration || loopAnimation)
             {
-                var t = elapsedTime / duration;
-                rectTransform.localScale = Vector3.Lerp(Vector3.one * magnitude, originalScale, t);
+                float currentTime = elapsedTime / duration;
+                float t = curve.Evaluate((currentTime / animationDuration) + startOffset);
+                rectTransform.localScale = originalScale + (targetScale - originalScale) * t;
 
-                elapsedTime += Time.deltaTime * speed;
+                elapsedTime += Time.deltaTime;
                 yield return null;
             }
 
-            rectTransform.localScale = originalScale;
+            StopAnimation(button);
         }
     }
 }

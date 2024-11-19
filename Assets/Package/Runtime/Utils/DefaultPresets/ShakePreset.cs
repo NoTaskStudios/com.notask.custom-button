@@ -1,20 +1,13 @@
 using UnityEngine;
 using System.Collections;
-using System;
-using System.Collections.Generic;
 
 namespace CustomButton.Utils
 {
-    [CreateAssetMenu(fileName = "new Shake Preset", menuName = "Custom Button/Presets/new Shake Animation", order = 0)]
+    [CreateAssetMenu(fileName = "new Shake Preset", menuName = "Custom Button/Presets/Shake Animation", order = 0)]
     public class ShakePreset : CoroutineAnimationPreset
     {
-        private void Awake()
-        {
-            duration = 0.1f;
-            speed = 50f;
-            magnitude = 5f;
-        }
 
+        [Min(0.1f)] public float speed;
         public override void StartAnimation(CustomButtonBase button)
         {
             RectTransform rectTransform = (RectTransform)button.transform;
@@ -40,7 +33,7 @@ namespace CustomButton.Utils
                 yield return null;
             }
 
-            rectTransform.anchoredPosition = originalPosition;
+            StopAnimation(button);
         }
     }
 }

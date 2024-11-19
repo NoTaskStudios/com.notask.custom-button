@@ -1,6 +1,9 @@
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
+using UnityEditor.UIElements;
+using System;
 namespace CustomButton
 {
     [CanEditMultipleObjects]
@@ -8,39 +11,45 @@ namespace CustomButton
     public class CustomButtonEditor : Editor
     {
         private Texture2D customIcon;
+        private Texture2D circleIcon;
         private SerializedProperty interactableProperty;
+        private SerializedProperty targetGraphicProperty;
+        private int selectedTab;
         // General
         private SerializedProperty opacityOnChildrenProperty;
         private SerializedProperty offsetOnChildrenProperty;
         // Color Tint
+        private SerializedProperty activeColorTintProperty;
         private SerializedProperty invertTextColorProperty;
-        private SerializedProperty targetGraphicProperty;
+        private SerializedProperty childColorProperty;
+        private SerializedProperty childAlphaProperty;
         private SerializedProperty blockColorsProperty;
         private Color previousNormalColor;
         // Sprite Swap
+        private SerializedProperty activeSpriteSwapProperty;
         private SerializedProperty spriteSwapProperty;
-        private SerializedProperty offsetVectorChildrenProperty;
         // Animation Preset
+        private SerializedProperty activeAnimationProperty;
         private SerializedProperty normalAnimProperty;
         private SerializedProperty highlightedAnimProperty;
         private SerializedProperty pressedAnimProperty;
         private SerializedProperty selectedAnimProperty;
         private SerializedProperty disabledAnimProperty;
-        //Tab Toogles
-        private bool showGeneralProperties = true;
-        private bool showColorProperties;
-        private bool showSpriteProperties;
-        private bool showAnimationProperties;
-        private SerializedProperty activeColorTintProperty;
-        private SerializedProperty activeSpriteSwapProperty;
-        private SerializedProperty activeAnimationProperty;
-        private SerializedProperty applyBlinkHighlightedProperty;
+
         private SerializedProperty onClickProperty;
 
-        private bool currentInteractable;
-        
-        private const string SelectedTabPreferenceKeyPrefix = "SelectedTabPreferenceKey_";
-        private int selectedTab;
+        private Action<int> onTabChanged;
+
+        //private SerializedProperty offsetVectorChildrenProperty;
+        //private SerializedProperty applyBlinkHighlightedProperty;
+
+        //Cache
+        private CustomButtonBase customButton;
+        private UnityEngine.UI.Graphic currentGraphic;
+        VisualElement colorTintTab;
+        VisualElement spriteSwapTab;
+        VisualElement animationTab;
+
         private void OnEnable()
         {
             LoadIconResource();
@@ -48,17 +57,19 @@ namespace CustomButton
             interactableProperty = serializedObject.FindProperty("_interactable");
             onClickProperty = serializedObject.FindProperty("onClick");
             // General
-            opacityOnChildrenProperty = serializedObject.FindProperty(nameof(CustomButtonBase.childrenColorOpacityOnly));
+            opacityOnChildrenProperty = serializedObject.FindProperty(nameof(CustomButtonBase.changeChildrenAlpha));
             offsetOnChildrenProperty = serializedObject.FindProperty("applyOffsetOnChildren");
             // Color Tint
             targetGraphicProperty = serializedObject.FindProperty("targetGraphic");
-            invertTextColorProperty = serializedObject.FindProperty("applyInvertColorOnTexts");
+            invertTextColorProperty = serializedObject.FindProperty(nameof(CustomButtonBase.invertColorOnTexts));
+            childColorProperty = serializedObject.FindProperty(nameof(CustomButtonBase.changeChildrenColor));
+            childAlphaProperty = serializedObject.FindProperty(nameof(CustomButtonBase.changeChildrenAlpha));
             blockColorsProperty = serializedObject.FindProperty("blockColors");
             previousNormalColor = ((CustomButtonClass)target).blockColors.normalColor;
             // Sprite Swap
             spriteSwapProperty = serializedObject.FindProperty("spriteState");
-            offsetVectorChildrenProperty = serializedObject.FindProperty("offsetVectorChildren");
-            applyBlinkHighlightedProperty = serializedObject.FindProperty("applyBlinkHighlighted");
+            //offsetVectorChildrenProperty = serializedObject.FindProperty("offsetVectorChildren");
+            //applyBlinkHighlightedProperty = serializedObject.FindProperty("applyBlinkHighlighted");
             // Animation Preset
             normalAnimProperty = serializedObject.FindProperty(nameof(CustomButtonBase.normalAnimation));
             highlightedAnimProperty = serializedObject.FindProperty(nameof(CustomButtonBase.highlightedAnimation));
@@ -66,11 +77,9 @@ namespace CustomButton
             selectedAnimProperty = serializedObject.FindProperty(nameof(CustomButtonBase.selectedAnimation));
             disabledAnimProperty = serializedObject.FindProperty(nameof(CustomButtonBase.disabledAnimation));
             //Tab System
-            activeColorTintProperty = serializedObject.FindProperty("activeColorTint");
-            activeSpriteSwapProperty = serializedObject.FindProperty(nameof(CustomButtonBase.activeSpriteSwap));
-            activeAnimationProperty = serializedObject.FindProperty("activeAnimation");
-            selectedTab = EditorPrefs.GetInt(GetGameObjectKey(target), 0);
-            SelectTab(selectedTab);
+            activeColorTintProperty = serializedObject.FindProperty(nameof(CustomButtonBase.colorTintTransition));
+            activeSpriteSwapProperty = serializedObject.FindProperty(nameof(CustomButtonBase.spriteSwapTransition));
+            activeAnimationProperty = serializedObject.FindProperty(nameof(CustomButtonBase.animationTransition));
         }
         private void LoadIconResource()
         {
@@ -78,197 +87,202 @@ namespace CustomButton
             var sprite = Resources.Load<Texture2D>(assetPath);
             customIcon = sprite;
         }
-        public override void OnInspectorGUI()
+
+        public override VisualElement CreateInspectorGUI()
         {
+            #region Setup
             serializedObject.Update();
-            var customButtonBase = (CustomButtonBase)target;
+            customButton = target as CustomButtonBase;
             EditorGUIUtility.SetIconForObject(target, customIcon);
-            EditorGUI.BeginChangeCheck();
-            var interactableValue = EditorGUILayout.Toggle("Interactable", interactableProperty.boolValue);
-            if (EditorGUI.EndChangeCheck())
+            #endregion
+
+            VisualElement root = new();
+
+            PropertyField interactable = new PropertyField(interactableProperty);
+            interactable.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
+            root.Add(interactable);
+
+            PropertyField targetGraphic = new PropertyField(targetGraphicProperty);
+            currentGraphic = (UnityEngine.UI.Graphic)targetGraphicProperty.objectReferenceValue;
+            targetGraphic.RegisterValueChangeCallback((evt) =>
             {
-                ((CustomButtonClass)target).Interactable = interactableValue;
-                interactableProperty.boolValue = interactableValue;
-                interactableProperty.serializedObject.ApplyModifiedProperties();
-                SceneView.RepaintAll();
-                EditorUtility.SetDirty(customButtonBase);
-            }
-            string[] tabs = { "General", "Color Tint", "Sprite Swap", "Animation" };
-            selectedTab = GUILayout.Toolbar(selectedTab, tabs);
-            if (selectedTab != EditorPrefs.GetInt(GetGameObjectKey(target), 0))
-            {
-                EditorPrefs.SetInt(GetGameObjectKey(target), selectedTab);
-                SelectTab(selectedTab);
-            }
-            EditorGUILayout.Space();
-            if (showGeneralProperties)
-            {
-                EditorGUILayout.PropertyField(targetGraphicProperty);
-                const int size = 16;
-                var colorTintLabel = new GUIContent("Status Color Tint:");
-                var spriteSwapLabel = new GUIContent("Status Sprite Swap:");
-                var animationLabel = new GUIContent("Status Animation Preset:");
-                var labelStyle = GUI.skin.label;
-                var calcColortint = labelStyle.CalcSize(colorTintLabel).x;
-                var calcSpriteSwap = labelStyle.CalcSize(spriteSwapLabel).x;
-                var calcAnimation = labelStyle.CalcSize(animationLabel).x;
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(colorTintLabel , GUILayout.Width(calcColortint)); // Define a largura baseada no tamanho do rótulo
-                GUILayout.Label(CreateRoundTexture(size, SetColorStatus(customButtonBase.activeColorTint)), GUILayout.Width(size), GUILayout.Height(size));
-                EditorGUILayout.EndHorizontal();
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(spriteSwapLabel , GUILayout.Width(calcSpriteSwap)); // Define a largura baseada no tamanho do rótulo
-                GUILayout.Label(CreateRoundTexture(size, SetColorStatus(customButtonBase.activeSpriteSwap)), GUILayout.Width(size), GUILayout.Height(size));
-                EditorGUILayout.EndHorizontal();
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(animationLabel , GUILayout.Width(calcAnimation)); // Define a largura baseada no tamanho do rótulo
-                GUILayout.Label(CreateRoundTexture(size, SetColorStatus(customButtonBase.activeAnimation)), GUILayout.Width(size), GUILayout.Height(size));
-                EditorGUILayout.EndHorizontal();
-            }
-            if (showColorProperties)
-            {
-                var activeColor = EditorGUILayout.Toggle("Active Color Tint", activeColorTintProperty.boolValue);
-                if (EditorGUI.EndChangeCheck())
+                if (currentGraphic)
                 {
-                    activeColorTintProperty.boolValue = activeColor;
-                    activeColorTintProperty.serializedObject.ApplyModifiedProperties();
+                    currentGraphic.CrossFadeColor(Color.white, 0, true, true);
+                    if(currentGraphic as UnityEngine.UI.Image)
+                    {
+                        UnityEngine.UI.Image img = (UnityEngine.UI.Image)currentGraphic;
+                        img.overrideSprite = null;
+                    }
                 }
-                EditorGUI.indentLevel++;
+                currentGraphic = (UnityEngine.UI.Graphic)evt.changedProperty.objectReferenceValue;
+                customButton.UpdateButtonState();
+            });
+            root.Add(targetGraphic);
+
+            VisualElement tabWindow = new VisualElement();
+            tabWindow.style.flexDirection = FlexDirection.Row;
+            tabWindow.SetBorder(3, borderColor: ColorExtensions.GrayShade(.1f));
+            root.Add(tabWindow);
+
+            #region ColorTab
+            //Button ColorTab
+            colorTintTab = new VisualElement();
+            root.Add(colorTintTab);
+            tabWindow.Add(TabButton("Color Tint", 0, activeColorTintProperty, colorTintTab, tabWindow));
+            //colorTintTab.Add(new Label("color tab"));
+            colorTintTab.style.display = DisplayStyle.None;
+            PropertyField invertTextColorField = new(invertTextColorProperty);
+            invertTextColorField.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
+            colorTintTab.Add(invertTextColorField);
+            PropertyField childColorField = new(childColorProperty);
+            childColorField.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
+            colorTintTab.Add(childColorField);
+            PropertyField childAlphaField = new(childAlphaProperty);
+            childAlphaField.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
+            colorTintTab.Add(childAlphaField);
+            PropertyField colorBlockField = new(blockColorsProperty);
+            colorBlockField.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
+            colorTintTab.Add(colorBlockField);
+            #endregion
+
+            #region SpriteTab
+            //Button SpriteTab
+            spriteSwapTab = new VisualElement();
+            root.Add(spriteSwapTab);
+            tabWindow.Add(TabButton("Sprite Swap", 1, activeSpriteSwapProperty, spriteSwapTab, tabWindow));
+            //spriteSwapTab.Add(new Label("sprite tab"));
+            spriteSwapTab.style.display = DisplayStyle.None;
+            PropertyField spriteSwap = new(spriteSwapProperty);
+            spriteSwap.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
+            spriteSwapTab.Add(spriteSwap);
+            #endregion
+
+            #region AnimationTab
+            //Button SpriteTab
+            animationTab = new VisualElement();
+            root.Add(animationTab);
+            tabWindow.Add(TabButton("Animation", 2, activeAnimationProperty, animationTab, tabWindow));
+            //animationTab.Add(new Label("animation tab"));
+            animationTab.style.display = DisplayStyle.None;
+            PropertyField normalAnimation = new(normalAnimProperty);
+            normalAnimation.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
+            animationTab.Add(normalAnimation);
+            PropertyField highlightedAnimation = new(highlightedAnimProperty);
+            highlightedAnimation.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
+            animationTab.Add(highlightedAnimation);
+            PropertyField pressedAnimation = new(pressedAnimProperty);
+            pressedAnimation.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
+            animationTab.Add(pressedAnimation);
+            PropertyField selectedAnimation = new(selectedAnimProperty);
+            selectedAnimation.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
+            animationTab.Add(selectedAnimation);
+            PropertyField disabledAnimation = new(disabledAnimProperty);
+            disabledAnimation.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
+            animationTab.Add(disabledAnimation);
+            #endregion
+
+            VisualElement padding = new();
+            padding.style.height = 20;
+            root.Add(padding);
+
+            VisualElement onChangeEvent = OnChangeEvent();
+            root.Add(onChangeEvent);
+
+            int currentID = 0;
+            if(activeSpriteSwapProperty.boolValue) currentID = 1;
+            else if (activeAnimationProperty.boolValue) currentID = 2;
+            selectedTab = currentID;
+            ChangeTab(selectedTab);
+            VerifyTabs();
+
+            return root;
+        }
+
+        private void ChangeTab(int tabID)
+        {
+            selectedTab = tabID;
+            onTabChanged?.Invoke(tabID);
+        }
+
+        private VisualElement OnChangeEvent()
+        {
+            return new IMGUIContainer(() =>
+            {
+                serializedObject.Update();
                 EditorGUI.BeginChangeCheck();
-                var invertColorText = EditorGUILayout.Toggle("Invert Color Text", invertTextColorProperty.boolValue);
+                EditorGUILayout.PropertyField(onClickProperty);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    invertTextColorProperty.boolValue = invertColorText;
-                    invertTextColorProperty.serializedObject.ApplyModifiedProperties();
+                    serializedObject.ApplyModifiedProperties();
                 }
-                EditorGUI.BeginChangeCheck();
-                var opacityChildrenText = EditorGUILayout.Toggle("Apply Opacity Children", opacityOnChildrenProperty.boolValue);
-                if (EditorGUI.EndChangeCheck())
-                {
-                    opacityOnChildrenProperty.boolValue = opacityChildrenText;
-                    opacityOnChildrenProperty.serializedObject.ApplyModifiedProperties();
-                }
-                EditorGUILayout.PropertyField(blockColorsProperty);
-                EditorGUI.indentLevel--;
-                // Só aplicar esta fução caso mexa no colorpicker no inpector
-                //customButtonBase.UpdateColor(customButtonBase.blockColors.normalColor);
-                
-                EditorUtility.SetDirty(customButtonBase);
+            });
+        }
+
+        private void VerifyTabs()
+        {
+            int activeTabs = 0;
+            if (activeColorTintProperty.boolValue) activeTabs ++;
+            if (activeSpriteSwapProperty.boolValue) activeTabs ++;
+            if (activeAnimationProperty.boolValue) activeTabs ++;
+
+            if (activeTabs == 0)
+            {
+                colorTintTab.style.display = DisplayStyle.None;
+                spriteSwapTab.style.display = DisplayStyle.None;
+                animationTab.style.display = DisplayStyle.None;
             }
+            else if( activeTabs == 1)
+            {
+                if (activeColorTintProperty.boolValue) ChangeTab(0);
+                else if (activeSpriteSwapProperty.boolValue) ChangeTab(1);
+                else if (activeAnimationProperty.boolValue) ChangeTab(2);
+            }
+        }
+
+        private VisualElement TabButton(string label, int tabID, SerializedProperty enableProperty, VisualElement tabProperties, VisualElement tabwindow)
+        {
+            Button button = new Button();
+            button.text = label;
+            button.style.flexGrow = 1;
+            button.style.unityTextAlign = TextAnchor.MiddleCenter;
             
-            if (showSpriteProperties)
+            button.RegisterCallback<GeometryChangedEvent>(evt =>
             {
-                var activeSprite = EditorGUILayout.Toggle("Active Sprite Swap", activeSpriteSwapProperty.boolValue);
-                if (EditorGUI.EndChangeCheck())
+                button.style.unityTextAlign = button.resolvedStyle.width switch
                 {
-                    activeSpriteSwapProperty.boolValue = activeSprite;
-                    activeSpriteSwapProperty.serializedObject.ApplyModifiedProperties();
-                }
-                EditorGUI.indentLevel++;
-                EditorGUI.BeginChangeCheck();
-                var offsetChildren = EditorGUILayout.Toggle("Apply Offset Children", offsetOnChildrenProperty.boolValue);
-                if (EditorGUI.EndChangeCheck())
-                {
-                    offsetOnChildrenProperty.boolValue = offsetChildren;
-                    offsetOnChildrenProperty.serializedObject.ApplyModifiedProperties();
-                }
-                EditorGUI.BeginChangeCheck();
-                var activeBlink = EditorGUILayout.Toggle("Apply Blink Highlighted", applyBlinkHighlightedProperty.boolValue);
-                if (EditorGUI.EndChangeCheck())
-                {
-                    applyBlinkHighlightedProperty.boolValue = activeBlink;
-                    applyBlinkHighlightedProperty.serializedObject.ApplyModifiedProperties();
-                }
-                if (offsetChildren)
-                {
-                    EditorGUI.indentLevel++;
-                    EditorGUILayout.PropertyField(offsetVectorChildrenProperty);
-                    EditorGUI.indentLevel--;
-                }
-                EditorGUILayout.PropertyField(spriteSwapProperty, true);
-                EditorGUI.indentLevel--;
-            }
-            if (showAnimationProperties)
+                    < 118 and > 95 => TextAnchor.MiddleRight,
+                    >= 118 => TextAnchor.MiddleCenter,
+                    _ => button.style.unityTextAlign
+                };
+                tabwindow.style.flexDirection = tabwindow.resolvedStyle.width <= 326 ?  FlexDirection.Column: FlexDirection.Row;
+            });
+            
+            Toggle enableToggle = new Toggle();
+            enableToggle.value = enableProperty.boolValue;
+            enableToggle.style.width = 14;
+            enableToggle.RegisterValueChangedCallback((evt) =>
             {
-                var activeAnimation = EditorGUILayout.Toggle("Active Animation Preset", activeAnimationProperty.boolValue);
-                if (EditorGUI.EndChangeCheck())
-                {
-                    activeAnimationProperty.boolValue = activeAnimation;
-                    activeAnimationProperty.serializedObject.ApplyModifiedProperties();
-                }
-                EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(normalAnimProperty, true);
-                EditorGUILayout.PropertyField(highlightedAnimProperty, true);
-                EditorGUILayout.PropertyField(pressedAnimProperty, true);
-                EditorGUILayout.PropertyField(selectedAnimProperty, true);
-                EditorGUILayout.PropertyField(disabledAnimProperty, true);
-                EditorGUI.indentLevel--;
-            }
-            EditorGUILayout.Space();
-            EditorGUILayout.PropertyField(onClickProperty);
-            serializedObject.ApplyModifiedProperties();
-        }
-
-        private static Color SetColorStatus(bool isActive) => isActive ? Color.green : Color.red;
-        private static string GetGameObjectKey(Object targetObject) => SelectedTabPreferenceKeyPrefix + targetObject.name + "_" + targetObject.GetType().Name;
-        private void SelectTab(int tab)
-        {
-            ResetTabs();
-            switch (tab)
+                
+                enableProperty.boolValue = evt.newValue;
+                serializedObject.ApplyModifiedProperties();
+                customButton.UpdateButtonState();
+                VerifyTabs();
+            });
+            button.Add(enableToggle);
+            button.clicked += () =>
             {
-                case 0: // General
-                    showGeneralProperties = true;
-                    break;
-                case 1: // Color Tint
-                    showColorProperties = true;
-                    break;
-                case 2: // Sprite Swap
-                    showSpriteProperties = true;
-                    break;
-                case 3: // Animation
-                    showAnimationProperties = true;
-                    break;
-            }
-            serializedObject.ApplyModifiedProperties();
-        }
-        private static Texture2D CreateRoundTexture(int size, Color color)
-        {
-            var texture = new Texture2D(size, size);
-            var pixels = new Color[size * size];
+                ChangeTab(tabID);
+            };
 
-            var radius = size / 2f;
-            var sqrRadius = radius * radius;
-
-            for (var y = 0; y < size; y++)
+            onTabChanged += (id) =>
             {
-                for (var x = 0; x < size; x++)
-                {
-                    var dx = x - radius;
-                    var dy = y - radius;
-                    var distance = dx * dx + dy * dy;
+                bool onTab = id == tabID;
+                button.pickingMode = onTab ? PickingMode.Ignore : PickingMode.Position;
+                tabProperties.style.display = onTab ? DisplayStyle.Flex : DisplayStyle.None;
+            };
 
-                    if (distance <= sqrRadius)
-                    {
-                        pixels[y * size + x] = color;
-                    }
-                    else
-                    {
-                        pixels[y * size + x] = Color.clear;
-                    }
-                }
-            }
-
-            texture.SetPixels(pixels);
-            texture.Apply();
-
-            return texture;
-        }
-        private void ResetTabs()
-        {
-            showGeneralProperties = false;
-            showColorProperties = false;
-            showSpriteProperties = false;
-            showAnimationProperties = false;
+            return button;
         }
     }
 }

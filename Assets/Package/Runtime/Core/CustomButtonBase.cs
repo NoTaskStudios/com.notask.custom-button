@@ -5,6 +5,7 @@ using CustomButton.Utils;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace CustomButton
@@ -17,14 +18,12 @@ namespace CustomButton
 
         #region Activators
 
-        public bool activeColorTint = true;
-        public bool activeSpriteSwap;
-        public bool activeAnimation;
+        public bool colorTintTransition = true;
+        public bool spriteSwapTransition;
+        public bool animationTransition;
         public bool changeChildrenColor;
-        public bool childrenColorOpacityOnly;
-        public bool applyBlinkHighlighted;
-        public bool applyOffsetOnChildren;
-        public bool applyInvertColorOnTexts;
+        [FormerlySerializedAs("childrenColorOpacityOnly")] public bool changeChildrenAlpha;
+        public bool invertColorOnTexts;
 
         #endregion
 
@@ -41,7 +40,6 @@ namespace CustomButton
             }
         }
 
-        private bool isPlayingAnimationEvt;
         [SerializeField] private Graphic targetGraphic;
         [SerializeField] private Sprite normalSprite;
         [SerializeField] private SpriteState spriteState;
@@ -91,10 +89,8 @@ namespace CustomButton
 
         #region Coroutines
 
-        private Coroutine colorLerpCoroutine;
-        private Coroutine opacityLerpCoroutine;
-        private Coroutine animationCoroutine;
-        private Coroutine offsetCoroutine;
+        private Coroutine pointerUpBuffer;
+        private WaitForSeconds bufferDelay = new(.2f);
 
         #endregion
 
@@ -154,14 +150,14 @@ namespace CustomButton
 
         public virtual void OnClick()
         {
-
+            if(pointerUpBuffer != null)
+            {
+                StopCoroutine(pointerUpBuffer);
+                pointerUpBuffer = null;
+            }
         }
 
         private void GetChildren() => graphics = GetComponentsInChildren<Graphic>();
-
-        #region Handles Transitions
-
-        #endregion
 
         public void OnTransformChildrenChanged()
         {
@@ -191,53 +187,25 @@ namespace CustomButton
         {
             if (!_interactable) return;
             selectionState = SelectionState.Pressed;
-            return;//leaving to check while refactoring
-            isPressed = true;
-            if (applyOffsetOnChildren && offsetCoroutine == null)
-                offsetCoroutine = StartCoroutine(OffsetBalanceDown(offsetVectorChildren, durationOffset));
-            UpdateButtonState();
-            ExecuteAnimation(pressedAnimation);
         }
 
         //Goes before PointerUp
         public void OnPointerUp(PointerEventData eventData)
         {
             if (!_interactable) return;
-            selectionState = SelectionState.Normal;
-            return;//leaving to check while refactoring
-            isPressed = false;
-            if (applyOffsetOnChildren)
-                offsetCoroutine = StartCoroutine(OffsetBalanceUp(initialPositions, durationOffset));
-            UpdateButtonState();
-            ExecuteAnimation(selectedAnimation);
+            pointerUpBuffer = StartCoroutine(PointerUpBuffer());
         }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
             if (!_interactable || isSelected || selectionState == SelectionState.Pressed) return;
             selectionState = SelectionState.Highlighted;
-            return;//leaving to check while refactoring
-            if (activeColorTint)
-            {
-                UpdateColor(blockColors.highlightedColor);
-            }
-
-            ExecuteAnimation(highlightedAnimation);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
             if (!_interactable || isSelected || selectionState == SelectionState.Pressed) return;
             selectionState = SelectionState.Normal;
-            return;//leaving to check while refactoring
-            if (applyOffsetOnChildren && initialPositions.Length > 0)
-                offsetCoroutine = StartCoroutine(OffsetBalanceUp(initialPositions, durationOffset));
-            if (activeColorTint)
-            {
-                UpdateColor(blockColors.normalColor);
-            }
-
-            ExecuteAnimation(currentAnimation);
         }
 
         public void OnDeselect(BaseEventData eventData)
@@ -248,16 +216,52 @@ namespace CustomButton
         }
         #endregion
 
-        #region StateTransitions
-        protected void UpdateButtonState()
+        #region Pointer up buffer
+
+        private IEnumerator PointerUpBuffer()
         {
+            yield return bufferDelay;
+            selectionState = SelectionState.Normal;
+            pointerUpBuffer = null;
+        }
+        #endregion
+
+        #region StateTransitions
+        public void UpdateButtonState()
+        {
+            ResetTransitions();
             SelectionState currentState = _interactable ? selectionState : SelectionState.Disabled;
-            if (activeColorTint)
+            if (colorTintTransition)
                 HandleColorTintTransition(currentState);
-            if (activeSpriteSwap)
+            if (spriteSwapTransition)
                 HandleSpriteSwapTransition(currentState);
-            if (activeAnimation)
+            if (animationTransition)
                 HandleAnimationTransition(currentState);
+        }
+
+        private void ResetTransitions()
+        {
+            if (!colorTintTransition)
+            {
+                targetGraphic?.CrossFadeColor(Color.white, 0, true, true);
+                Action<Graphic> crossFade = null;
+                crossFade += (graphic) => graphic.CrossFadeColor(Color.white, blockColors.fadeDuration, true, false);
+                crossFade += (graphic) => graphic.CrossFadeAlpha(1, blockColors.fadeDuration, true);
+
+                for (int i = 0; i < graphics.Length; i++)
+                    if (graphics[i] != targetGraphic) crossFade(graphics[i]);
+
+                var texts = GetComponentsInChildren<TMP_Text>();
+                foreach (var text in texts)
+                    text.CrossFadeColor(Color.white, 0, true, true);
+
+            }
+            if (!spriteSwapTransition)
+            {
+                var targetImage = targetGraphic as Image;
+                if (targetImage) SetSprite(targetImage, null);
+            }
+            if(!animationTransition) currentAnimation?.StopAnimation(this);
         }
 
         #region ColorTransitions
@@ -275,26 +279,26 @@ namespace CustomButton
 
             UpdateColor(color);
 
-            if(changeChildrenColor) UpdateChildGraphicsColor(color, childrenColorOpacityOnly);
+            UpdateChildGraphicsColor(color, changeChildrenColor, changeChildrenAlpha);
             InvertColorText(color);
         }
 
-        public void UpdateColor(Color targetColor) => targetGraphic.CrossFadeColor(targetColor, blockColors.fadeDuration, true, true);
+        private void UpdateColor(Color targetColor) => targetGraphic?.CrossFadeColor(targetColor, blockColors.fadeDuration, true, true);
 
-        private void UpdateChildGraphicsColor(Color targetColor, bool opacityOnly = false)
+        private void UpdateChildGraphicsColor(Color targetColor,bool changeColor, bool useAlpha = false)
         {
-            Action<Graphic> crossFade =
-                opacityOnly ? (graphic) => graphic.CrossFadeAlpha(targetColor.a, blockColors.fadeDuration, true)
-                : (graphic) => graphic.CrossFadeColor(targetColor, blockColors.fadeDuration, true, true);
+            Action<Graphic> crossFade = null;
+            if(changeColor) crossFade += (graphic) => graphic.CrossFadeColor(targetColor, blockColors.fadeDuration, true, false);
+            if(useAlpha) crossFade += (graphic) => graphic.CrossFadeAlpha(targetColor.a, blockColors.fadeDuration, true);
 
             for (int i = 0; i < graphics.Length; i++)
-                crossFade(graphics[i]);
+                if(graphics[i] != targetGraphic) crossFade(graphics[i]);
         }
 
-        public void InvertColorText(Color targetColor)
+        private void InvertColorText(Color targetColor)
         {
             // Refactor
-            if (!applyInvertColorOnTexts) return;
+            if (!invertColorOnTexts) return;
             var invertedColor = Color.white - targetColor;
             invertedColor.a = targetColor.a;
 
@@ -349,7 +353,7 @@ namespace CustomButton
         private void ExecuteAnimation(AnimationPreset animation = null)
         {
             currentAnimation?.StopAnimation(this);
-            if (animation == null || isPlayingAnimationEvt) return;
+            if (animation == null) return;
 
             currentAnimation = animation;
             animation.StartAnimation(this);
@@ -360,7 +364,7 @@ namespace CustomButton
 
         #region TODO Refactore
 
-        private IEnumerator OffsetBalanceUp(IReadOnlyList<Vector2> initialPositions, float duration)
+        /*private IEnumerator OffsetBalanceUp(IReadOnlyList<Vector2> initialPositions, float duration)
         {
             var elapsedTime = 0f;
             while (elapsedTime < duration)
@@ -422,7 +426,7 @@ namespace CustomButton
             {
                 graphics[i].rectTransform.anchoredPosition = initialPositions[i] + offset;
             }
-        }
+        }*/
 
         #endregion
     }

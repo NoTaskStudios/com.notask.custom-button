@@ -9,43 +9,37 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 570c2d0fc63e79e4eaf472abacecb239, type: 3}
-  m_Name: ScalePreset
+  m_Script: {fileID: 11500000, guid: 8b71b997c2ad7f246912ba176fb6817b, type: 3}
+  m_Name: SinkAndShake
   m_EditorClassIdentifier: 
-  duration: 0.1
+  duration: 0
   loopAnimation: 0
-  magnitude: 0.2
+  speed: 0
+  magnitude: 0
   curve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 4.3375254
-      outSlope: 4.3375254
+      inSlope: 0
+      outSlope: 1
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.041152265
-    - serializedVersion: 3
-      time: 0.5
-      value: 1
-      inSlope: -0.003834223
-      outSlope: -0.003834223
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.015141249
+      outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 0
-      inSlope: -3.914213
-      outSlope: -3.914213
+      value: 1
+      inSlope: 1
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.046639204
+      inWeight: 0
       outWeight: 0
-    m_PreInfinity: 1
-    m_PostInfinity: 1
+    m_PreInfinity: 2
+    m_PostInfinity: 2
     m_RotationOrder: 4
-  scaleDirection: {x: 1, y: 1, z: 0}
+  presets:
+  - {fileID: 11400000, guid: 00fbbcd05a2027140abb1da1ea9edbc1, type: 2}
+  - {fileID: 11400000, guid: 701779a59416eb742ba2db9690d96b18, type: 2}
