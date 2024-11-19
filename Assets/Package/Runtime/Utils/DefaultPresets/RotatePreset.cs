@@ -8,7 +8,7 @@ namespace CustomButton.Utils
     {
         [SerializeField] private Vector3 rotationAxis = Vector3.forward;
 
-        public override void StartAnimation(CustomButtonBase button)
+        public override void StartAnimation(MonoBehaviour button)
         {
             RectTransform rectTransform = (RectTransform)button.transform;
             var originalRotation = rectTransform.eulerAngles;
@@ -17,7 +17,7 @@ namespace CustomButton.Utils
             stopSequence[button] += () => rectTransform.eulerAngles = originalRotation;
         }
 
-        protected override IEnumerator AnimationCoroutine(CustomButtonBase button)
+        protected override IEnumerator AnimationCoroutine(MonoBehaviour button)
         {
             RectTransform rectTransform = (RectTransform)button.transform;
             var originalRotation = rectTransform.eulerAngles;

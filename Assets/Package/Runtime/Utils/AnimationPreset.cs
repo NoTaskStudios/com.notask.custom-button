@@ -12,8 +12,8 @@ namespace CustomButton.Utils
         protected float curveEnd => curve.keys[^1].time;
         protected float curveDuration => curveEnd - curveStart;
 
-        public abstract void StartAnimation(CustomButtonBase button);
-        public abstract void StopAnimation(CustomButtonBase button);
+        public abstract void StartAnimation(MonoBehaviour button);
+        public abstract void StopAnimation(MonoBehaviour button);
     }
     
 }
