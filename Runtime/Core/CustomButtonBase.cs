@@ -49,6 +49,7 @@ namespace CustomButton
         }
 
         public GraphicTransition transition;
+        public GraphicTransition[] subTransitions;
 
         #region Plus Events
 
@@ -90,6 +91,17 @@ namespace CustomButton
         }
 
         private void OnDestroy() => onClick.RemoveAllListeners();
+
+        private void Reset()
+        {
+            if (transition != null) transition.ResetTransitions();
+            transition = new(GetComponent<Graphic>());
+
+            if (subTransitions != null)
+                for (int i = 0; i < subTransitions.Length; i++)
+                    subTransitions[i].ResetTransitions();
+        }
+
         #endregion
 
         public void ToogleInteractable() => Interactable = !Interactable;

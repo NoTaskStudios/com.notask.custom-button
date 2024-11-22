@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using System;
+using System.Collections.Generic;
+
 namespace CustomButton
 {
     [CanEditMultipleObjects]
@@ -13,6 +15,7 @@ namespace CustomButton
         private Texture2D customIcon;
         private Texture2D circleIcon;
         private SerializedProperty interactableProperty;
+        private SerializedProperty subTransitionsProperty;
 
         private SerializedProperty onClickProperty;
 
@@ -20,10 +23,13 @@ namespace CustomButton
         private CustomButtonBase customButton;
         private UnityEngine.UI.Graphic currentGraphic;
 
+        private List<GraphicTransition> cachedSubTransitions;
+
         private void OnEnable()
         {
             LoadIconResource();
             interactableProperty = serializedObject.FindProperty("_interactable");
+            subTransitionsProperty = serializedObject.FindProperty(nameof(CustomButtonBase.subTransitions));
             onClickProperty = serializedObject.FindProperty("onClick");
         }
         private void LoadIconResource()
@@ -44,12 +50,12 @@ namespace CustomButton
             VisualElement root = new();
 
             PropertyField interactable = new PropertyField(interactableProperty);
-            interactable.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
+            interactable.RegisterValueChangeCallback(_ => customButton.UpdateButtonState());
             root.Add(interactable);
 
             SerializedProperty transition = serializedObject.FindProperty(nameof(CustomButtonBase.transition));
             PropertyField transitionField = new PropertyField(transition);
-            transitionField.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
+            transitionField.RegisterValueChangeCallback(_ => customButton.UpdateButtonState());
             root.Add(transitionField);
 
             VisualElement padding = new();
@@ -58,6 +64,14 @@ namespace CustomButton
 
             VisualElement onChangeEvent = OnChangeEvent();
             root.Add(onChangeEvent);
+            
+            padding = new();
+            padding.style.height = 8;
+            root.Add(padding);
+            
+            PropertyField subTransitions = new PropertyField(subTransitionsProperty);
+            subTransitions.RegisterValueChangeCallback(UpdateSubTransitions);
+            root.Add(subTransitions);
 
             return root;
         }
@@ -74,6 +88,50 @@ namespace CustomButton
                     serializedObject.ApplyModifiedProperties();
                 }
             });
+        }
+
+        private void UpdateSubTransitions(SerializedPropertyChangeEvent evt)
+        {
+            Debug.Log(".");
+            if (!evt.changedProperty.isArray) return;
+
+            if (cachedSubTransitions != null)
+            {
+                for (int i = 0; i < cachedSubTransitions.Count; i++)
+                    cachedSubTransitions[i].ResetTransitions();
+            }
+            
+            CacheSubTransitionsList(evt.changedProperty);
+            
+            for (int i = 0; i < cachedSubTransitions.Count; i++)
+                cachedSubTransitions[i].UpdateState(customButton.Interactable ? 
+                    SelectionState.Normal : SelectionState.Disabled);
+        }
+
+        private void CacheSubTransitionsList(SerializedProperty sp)
+        {
+            if (cachedSubTransitions == null) cachedSubTransitions = new();
+            cachedSubTransitions.Clear();
+            if (!sp.isArray) return;
+            
+            SerializedProperty property = sp.Copy();
+            int arrayLength = 0;
+
+            property.Next(true); // skip generic field
+            property.Next(true); // advance to array size field
+
+            // Get the array size
+            arrayLength = property.intValue;
+            int lastIndex = arrayLength - 1;
+
+            property.Next(true); // advance to first array index
+
+            for (int i = 0; i < arrayLength; i++)
+            {
+                //Debug.Log(property.boxedValue as GraphicTransition);
+                cachedSubTransitions.Add(property.boxedValue as GraphicTransition);
+                if(i < lastIndex) sp.Next(false); // advance without drilling into children
+            }
         }
     }
 }

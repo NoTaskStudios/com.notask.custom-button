@@ -9,7 +9,6 @@ using UnityEngine.UI;
 [Serializable]
 public class GraphicTransition
 {
-
     public Graphic targetGraphic;
     public Graphic[] childGraphics;
     public TMP_Text[] childTexts;
@@ -57,7 +56,7 @@ public class GraphicTransition
     private AnimationPreset currentAnimation;
 
     #endregion
-
+    
     public GraphicTransition (Graphic targetGraphic)
     {
         this.targetGraphic = targetGraphic;
@@ -144,6 +143,7 @@ public class GraphicTransition
         if (changeColor) crossFade += (graphic) => graphic.CrossFadeColor(targetColor, blockColors.fadeDuration, true, false);
         if (useAlpha) crossFade += (graphic) => graphic.CrossFadeAlpha(targetColor.a, blockColors.fadeDuration, true);
 
+        if(crossFade == null || childGraphics == null) return;
         for (int i = 0; i < childGraphics.Length; i++)
             if (childGraphics[i] != targetGraphic) crossFade(childGraphics[i]);
     }
