@@ -1,10 +1,8 @@
-using CustomButton;
 using System;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-
 
 [CustomPropertyDrawer(typeof(GraphicTransition))]
 public class GraphicTransitionDrawer : PropertyDrawer
@@ -62,6 +60,7 @@ public class GraphicTransitionDrawer : PropertyDrawer
                 }
             }
             currentGraphic = (UnityEngine.UI.Graphic)evt.changedProperty.objectReferenceValue;
+            evt.changedProperty.serializedObject.ApplyModifiedProperties();
         });
         root.Add(targetGraphic);
 
@@ -79,15 +78,24 @@ public class GraphicTransitionDrawer : PropertyDrawer
 
         PropertyField colorBlockField = new(blockColorsProperty);
         colorTintTab.Add(colorBlockField);
+        colorBlockField.RegisterValueChangeCallback((evt)=>
+            evt.changedProperty.serializedObject.ApplyModifiedProperties());
+        Debug.Log(blockColorsProperty.serializedObject);
 
         PropertyField invertTextColorField = new(invertTextColorProperty);
         colorTintTab.Add(invertTextColorField);
+        invertTextColorField.RegisterValueChangeCallback((evt)=>
+            evt.changedProperty.serializedObject.ApplyModifiedProperties());
 
         PropertyField childColorField = new(childColorProperty);
         colorTintTab.Add(childColorField);
+        childColorField.RegisterValueChangeCallback((evt)=>
+            evt.changedProperty.serializedObject.ApplyModifiedProperties());
 
         PropertyField childAlphaField = new(childAlphaProperty);
         colorTintTab.Add(childAlphaField);
+        childAlphaField.RegisterValueChangeCallback((evt)=>
+            evt.changedProperty.serializedObject.ApplyModifiedProperties());
         #endregion
 
         #region SpriteTab
@@ -188,6 +196,7 @@ public class GraphicTransitionDrawer : PropertyDrawer
         {
 
             enableProperty.boolValue = evt.newValue;
+            Debug.Log(enableProperty.serializedObject);
             enableProperty.serializedObject.ApplyModifiedProperties();
             //customButton.UpdateButtonState();
             VerifyTabs();
