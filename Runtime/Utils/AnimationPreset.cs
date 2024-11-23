@@ -3,7 +3,7 @@ namespace CustomButton.Utils
 {
     public abstract class AnimationPreset : ScriptableObject 
     {
-        [Min(0.1f)] public float duration;
+        [Min(0.01f)] public float duration;
         [Tooltip("Make sure to verify the AnimationCurve loop type")]public bool loopAnimation = false;
         public float magnitude;
         public AnimationCurve curve = AnimationCurve.Linear(0, 0, 1, 1);
