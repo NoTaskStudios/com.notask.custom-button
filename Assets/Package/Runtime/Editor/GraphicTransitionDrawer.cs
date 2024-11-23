@@ -138,10 +138,10 @@ public class GraphicTransitionDrawer : PropertyDrawer
 
         VerifyTabs(); 
 
-        if (!graphicTransition.colorTintTransition)
+        if (!activeColorTintProperty.boolValue)
         {
-            if (graphicTransition.spriteSwapTransition) ChangeTab(1);
-            else if (graphicTransition.animationTransition) ChangeTab(2);
+            if (activeSpriteSwapProperty.boolValue) ChangeTab(1);
+            else if (activeAnimationProperty.boolValue) ChangeTab(2);
         }
         else ChangeTab(0);
 
@@ -157,9 +157,9 @@ public class GraphicTransitionDrawer : PropertyDrawer
     private void VerifyTabs()
     {
         int activeTabs = 0;
-        if (graphicTransition.colorTintTransition) activeTabs++;
-        if (graphicTransition.spriteSwapTransition) activeTabs++;
-        if (graphicTransition.animationTransition) activeTabs++;
+        if (activeColorTintProperty.boolValue) activeTabs++;
+        if (activeSpriteSwapProperty.boolValue) activeTabs++;
+        if (activeAnimationProperty.boolValue) activeTabs++;
 
         if (activeTabs == 0)
         {
@@ -169,9 +169,9 @@ public class GraphicTransitionDrawer : PropertyDrawer
         }
         else if (activeTabs == 1)
         {
-            if (graphicTransition.colorTintTransition) ChangeTab(0);
-            else if (graphicTransition.spriteSwapTransition) ChangeTab(1);
-            else if (graphicTransition.animationTransition) ChangeTab(2);
+            if (activeColorTintProperty.boolValue) ChangeTab(0);
+            else if (activeSpriteSwapProperty.boolValue) ChangeTab(1);
+            else if (activeAnimationProperty.boolValue) ChangeTab(2);
         }
     }
 
@@ -201,7 +201,8 @@ public class GraphicTransitionDrawer : PropertyDrawer
 
             enableProperty.boolValue = evt.newValue;
             enableProperty.serializedObject.ApplyModifiedProperties();
-            //customButton.UpdateButtonState();
+            enableProperty.serializedObject.Update();
+            graphicTransition.ResetTransitions();
             VerifyTabs();
         });
         button.Add(enableToggle);

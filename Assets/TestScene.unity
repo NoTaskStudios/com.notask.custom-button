@@ -552,10 +552,13 @@ MonoBehaviour:
   rectTransform: {fileID: 263224380}
   _interactable: 1
   transition:
-    targetGraphic: {fileID: 0}
-    childGraphics: []
-    childTexts: []
-    constructorSerialized: 0
+    targetGraphic: {fileID: 263224382}
+    childGraphics:
+    - {fileID: 1739834354}
+    - {fileID: 1220668680}
+    childTexts:
+    - {fileID: 1739834354}
+    constructorSerialized: 1
     colorTintTransition: 1
     spriteSwapTransition: 0
     animationTransition: 0
@@ -1209,7 +1212,7 @@ MonoBehaviour:
     changeChildrenAlpha: 0
     invertColorOnTexts: 0
     blockColors:
-      m_NormalColor: {r: 1, g: 0.64705884, b: 0, a: 1}
+      m_NormalColor: {r: 1, g: 0.69533855, b: 0.13679248, a: 1}
       m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
       m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
       m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
