@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 528f0e275de6d8a4d82eaeec4953c42e, type: 3}
   m_Name: ButtonSinkPreset
   m_EditorClassIdentifier: 
-  duration: 1
-  loopAnimation: 0
+  duration: 0.01
+  loopAnimation: 1
   magnitude: 8
   curve:
     serializedVersion: 2
@@ -39,5 +39,4 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  moveChildren: 0
   moveDirection: {x: 0, y: -1}
