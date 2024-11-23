@@ -16,6 +16,7 @@ public class GraphicTransitionDrawer : PropertyDrawer
     private Action<int> onTabChanged;
 
     //Cache
+    private GraphicTransition graphicTransition = null;
     private UnityEngine.UI.Graphic currentGraphic;
     VisualElement colorTintTab;
     VisualElement spriteSwapTab;
@@ -23,6 +24,16 @@ public class GraphicTransitionDrawer : PropertyDrawer
 
     public override VisualElement CreatePropertyGUI(SerializedProperty property)
     {
+        graphicTransition = property.boxedValue as GraphicTransition;
+        //SerializationCheck
+        if (graphicTransition.badlySerialized)//no default values, fix it
+        {
+            graphicTransition = new GraphicTransition(null);
+            property.boxedValue = graphicTransition;
+            property.serializedObject.ApplyModifiedProperties();
+            property.serializedObject.Update();
+        }
+        
         #region Properties
         SerializedProperty targetGraphicProperty = property.FindPropertyRelative(nameof(GraphicTransition.targetGraphic));
         // Color Tint
@@ -47,7 +58,7 @@ public class GraphicTransitionDrawer : PropertyDrawer
         VisualElement root = new();
 
         PropertyField targetGraphic = new PropertyField(targetGraphicProperty);
-        currentGraphic = (UnityEngine.UI.Graphic)targetGraphicProperty.objectReferenceValue;
+        currentGraphic = graphicTransition.targetGraphic;
         targetGraphic.RegisterValueChangeCallback((evt) =>
         {
             if (currentGraphic)
@@ -78,24 +89,15 @@ public class GraphicTransitionDrawer : PropertyDrawer
 
         PropertyField colorBlockField = new(blockColorsProperty);
         colorTintTab.Add(colorBlockField);
-        colorBlockField.RegisterValueChangeCallback((evt)=>
-            evt.changedProperty.serializedObject.ApplyModifiedProperties());
-        Debug.Log(blockColorsProperty.serializedObject);
 
         PropertyField invertTextColorField = new(invertTextColorProperty);
         colorTintTab.Add(invertTextColorField);
-        invertTextColorField.RegisterValueChangeCallback((evt)=>
-            evt.changedProperty.serializedObject.ApplyModifiedProperties());
 
         PropertyField childColorField = new(childColorProperty);
         colorTintTab.Add(childColorField);
-        childColorField.RegisterValueChangeCallback((evt)=>
-            evt.changedProperty.serializedObject.ApplyModifiedProperties());
 
         PropertyField childAlphaField = new(childAlphaProperty);
         colorTintTab.Add(childAlphaField);
-        childAlphaField.RegisterValueChangeCallback((evt)=>
-            evt.changedProperty.serializedObject.ApplyModifiedProperties());
         #endregion
 
         #region SpriteTab
@@ -134,12 +136,14 @@ public class GraphicTransitionDrawer : PropertyDrawer
         animationTab.Add(disabledAnimation);
         #endregion
 
-        int currentID = 0;
-        if (activeSpriteSwapProperty.boolValue) currentID = 1;
-        else if (activeAnimationProperty.boolValue) currentID = 2;
-        selectedTab = currentID;
-        ChangeTab(selectedTab);
-        VerifyTabs();
+        VerifyTabs(); 
+
+        if (!graphicTransition.colorTintTransition)
+        {
+            if (graphicTransition.spriteSwapTransition) ChangeTab(1);
+            else if (graphicTransition.animationTransition) ChangeTab(2);
+        }
+        else ChangeTab(0);
 
         return root;
     }
@@ -153,9 +157,9 @@ public class GraphicTransitionDrawer : PropertyDrawer
     private void VerifyTabs()
     {
         int activeTabs = 0;
-        if (activeColorTintProperty.boolValue) activeTabs++;
-        if (activeSpriteSwapProperty.boolValue) activeTabs++;
-        if (activeAnimationProperty.boolValue) activeTabs++;
+        if (graphicTransition.colorTintTransition) activeTabs++;
+        if (graphicTransition.spriteSwapTransition) activeTabs++;
+        if (graphicTransition.animationTransition) activeTabs++;
 
         if (activeTabs == 0)
         {
@@ -165,9 +169,9 @@ public class GraphicTransitionDrawer : PropertyDrawer
         }
         else if (activeTabs == 1)
         {
-            if (activeColorTintProperty.boolValue) ChangeTab(0);
-            else if (activeSpriteSwapProperty.boolValue) ChangeTab(1);
-            else if (activeAnimationProperty.boolValue) ChangeTab(2);
+            if (graphicTransition.colorTintTransition) ChangeTab(0);
+            else if (graphicTransition.spriteSwapTransition) ChangeTab(1);
+            else if (graphicTransition.animationTransition) ChangeTab(2);
         }
     }
 
@@ -196,7 +200,6 @@ public class GraphicTransitionDrawer : PropertyDrawer
         {
 
             enableProperty.boolValue = evt.newValue;
-            Debug.Log(enableProperty.serializedObject);
             enableProperty.serializedObject.ApplyModifiedProperties();
             //customButton.UpdateButtonState();
             VerifyTabs();

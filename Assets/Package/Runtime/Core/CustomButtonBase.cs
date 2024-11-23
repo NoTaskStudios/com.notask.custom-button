@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -49,7 +50,7 @@ namespace CustomButton
         }
 
         public GraphicTransition transition;
-        public GraphicTransition[] subTransitions;
+        public List<GraphicTransition> subTransitions;
 
         #region Plus Events
 
@@ -94,12 +95,9 @@ namespace CustomButton
 
         private void Reset()
         {
-            if (transition != null) transition.ResetTransitions();
+            ResetTransitions();
+            subTransitions?.Clear();
             transition = new(GetComponent<Graphic>());
-
-            if (subTransitions != null)
-                for (int i = 0; i < subTransitions.Length; i++)
-                    subTransitions[i].ResetTransitions();
         }
 
         #endregion
@@ -117,7 +115,6 @@ namespace CustomButton
 
         public void OnTransformChildrenChanged()
         {
-            ResetTransitions();
             UpdateButtonState();
         }
 
@@ -186,12 +183,18 @@ namespace CustomButton
         public void UpdateButtonState()
         {
             SelectionState currentState = _interactable ? selectionState : SelectionState.Disabled;
-            transition.UpdateState(currentState);
+            transition?.UpdateState(currentState);
+            if (subTransitions != null)
+                for (int i = 0; i < subTransitions.Count; i++)
+                    subTransitions[i].UpdateState(currentState);
         }
 
         private void ResetTransitions()
         {
-            transition.ResetTransitions();
+            transition?.ResetTransitions();
+            if (subTransitions != null)
+                for (int i = 0; i < subTransitions.Count; i++)
+                    subTransitions[i].ResetTransitions();
         }
 
         #endregion
