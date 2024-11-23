@@ -115,6 +115,8 @@ namespace CustomButton
 
             cachedSubTransitions = current;
             customButton.UpdateButtonState();
+            if (!Application.isPlaying)
+                EditorApplication.QueuePlayerLoopUpdate();
         }
     }
 }
