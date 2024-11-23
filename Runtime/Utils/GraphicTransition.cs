@@ -13,6 +13,11 @@ public class GraphicTransition
     public Graphic[] childGraphics;
     public TMP_Text[] childTexts;
 
+    #region Serialization Check
+    public bool constructorSerialized = true;
+    public bool badlySerialized => !constructorSerialized;
+    #endregion
+
     #region Activators
 
     public bool colorTintTransition = true;

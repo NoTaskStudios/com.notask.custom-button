@@ -3,7 +3,6 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
-using System;
 using System.Collections.Generic;
 
 namespace CustomButton
@@ -68,10 +67,11 @@ namespace CustomButton
             padding = new();
             padding.style.height = 8;
             root.Add(padding);
-            
+
             PropertyField subTransitions = new PropertyField(subTransitionsProperty);
-            subTransitions.RegisterValueChangeCallback(UpdateSubTransitions);
             root.Add(subTransitions);
+
+            customButton.UpdateButtonState();
 
             return root;
         }
@@ -87,51 +87,34 @@ namespace CustomButton
                 {
                     serializedObject.ApplyModifiedProperties();
                 }
+
+                //odd i know
+                UpdateCacheSubTransitions();
             });
         }
 
-        private void UpdateSubTransitions(SerializedPropertyChangeEvent evt)
-        {
-            Debug.Log(".");
-            if (!evt.changedProperty.isArray) return;
-
-            if (cachedSubTransitions != null)
-            {
-                for (int i = 0; i < cachedSubTransitions.Count; i++)
-                    cachedSubTransitions[i].ResetTransitions();
-            }
-            
-            CacheSubTransitionsList(evt.changedProperty);
-            
-            for (int i = 0; i < cachedSubTransitions.Count; i++)
-                cachedSubTransitions[i].UpdateState(customButton.Interactable ? 
-                    SelectionState.Normal : SelectionState.Disabled);
-        }
-
-        private void CacheSubTransitionsList(SerializedProperty sp)
+        private void UpdateCacheSubTransitions()
         {
             if (cachedSubTransitions == null) cachedSubTransitions = new();
-            cachedSubTransitions.Clear();
-            if (!sp.isArray) return;
-            
-            SerializedProperty property = sp.Copy();
-            int arrayLength = 0;
+            List<GraphicTransition> current = new(customButton.subTransitions.Count);
 
-            property.Next(true); // skip generic field
-            property.Next(true); // advance to array size field
-
-            // Get the array size
-            arrayLength = property.intValue;
-            int lastIndex = arrayLength - 1;
-
-            property.Next(true); // advance to first array index
-
-            for (int i = 0; i < arrayLength; i++)
+            for (int i = 0; i < customButton.subTransitions.Count; i++)
             {
-                //Debug.Log(property.boxedValue as GraphicTransition);
-                cachedSubTransitions.Add(property.boxedValue as GraphicTransition);
-                if(i < lastIndex) sp.Next(false); // advance without drilling into children
+                GraphicTransition subTransition = customButton.subTransitions[i];
+                current.Add(subTransition);
             }
+
+            //reset old ones
+            for (int i = 0;i < cachedSubTransitions.Count; i++)
+            {
+                if (!current.Contains(cachedSubTransitions[i]))
+                {
+                    cachedSubTransitions[i].ResetTransitions();
+                }
+            }
+
+            cachedSubTransitions = current;
+            customButton.UpdateButtonState();
         }
     }
 }
