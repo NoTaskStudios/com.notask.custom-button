@@ -21,6 +21,7 @@ namespace CustomButton
             set
             {
                 if (_interactable == value) return;
+                if(!value) isSelected = false;
                 _interactable = value;
                 selectionState = _interactable ? SelectionState.Normal : SelectionState.Disabled;
             }
@@ -67,7 +68,6 @@ namespace CustomButton
 
         #region Button Default Events
 
-        private bool isPressed;
         private bool isSelected;
         public Button.ButtonClickedEvent onClick = new();
 
