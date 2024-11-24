@@ -68,8 +68,8 @@ namespace CustomButton
             padding.style.height = 8;
             root.Add(padding);
 
-            PropertyField subTransitions = new PropertyField(subTransitionsProperty);
-            root.Add(subTransitions);
+            /*PropertyField subTransitions = new PropertyField(subTransitionsProperty);
+            root.Add(subTransitions);*/
 
             customButton.UpdateButtonState();
 
@@ -87,9 +87,6 @@ namespace CustomButton
                 {
                     serializedObject.ApplyModifiedProperties();
                 }
-
-                //odd i know
-                UpdateCacheSubTransitions();
             });
         }
 
