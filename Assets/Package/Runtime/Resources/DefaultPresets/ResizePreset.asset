@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb318119d88e9314ea10595ba6b6f48e, type: 3}
   m_Name: ResizePreset
   m_EditorClassIdentifier: 
-  duration: 0.1
+  duration: 0.01
   loopAnimation: 1
-  speed: 1
   magnitude: 8.75
   curve:
     serializedVersion: 2

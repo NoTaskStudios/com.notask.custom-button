@@ -10,7 +10,7 @@ namespace CustomButton.Utils
     {
         [SerializeField] private Vector3 scaleDirection = Vector3.one;
 
-        public override void StartAnimation(CustomButtonBase button)
+        public override void StartAnimation(MonoBehaviour button)
         {
             RectTransform rectTransform = (RectTransform)button.transform;
             var originalScale = rectTransform.localScale;
@@ -19,7 +19,7 @@ namespace CustomButton.Utils
             stopSequence[button] += () => rectTransform.localScale = originalScale;
         }
 
-        protected override IEnumerator AnimationCoroutine(CustomButtonBase button)
+        protected override IEnumerator AnimationCoroutine(MonoBehaviour button)
         {
             RectTransform rectTransform = (RectTransform)button.transform;
             var originalScale = rectTransform.localScale;

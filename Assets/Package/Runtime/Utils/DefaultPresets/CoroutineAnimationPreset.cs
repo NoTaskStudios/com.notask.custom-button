@@ -7,9 +7,9 @@ namespace CustomButton.Utils
 {
     public abstract class CoroutineAnimationPreset : AnimationPreset
     {
-        protected Dictionary<CustomButtonBase, Action> stopSequence = new();
+        protected Dictionary<MonoBehaviour, Action> stopSequence = new();
 
-        public override void StartAnimation(CustomButtonBase button)
+        public override void StartAnimation(MonoBehaviour button)
         {
             stopSequence ??= new();
             Coroutine coroutine = button.StartCoroutine(AnimationCoroutine(button));
@@ -17,9 +17,9 @@ namespace CustomButton.Utils
             stopSequence[button] = () => { button.StopCoroutine(coroutine); };
         }
 
-        protected abstract IEnumerator AnimationCoroutine(CustomButtonBase button);
+        protected abstract IEnumerator AnimationCoroutine(MonoBehaviour button);
 
-        public override void StopAnimation(CustomButtonBase button)
+        public override void StopAnimation(MonoBehaviour button)
         {
             if (stopSequence == null || !stopSequence.ContainsKey(button)) return;
             stopSequence[button]?.Invoke();

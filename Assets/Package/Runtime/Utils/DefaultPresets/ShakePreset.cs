@@ -8,7 +8,7 @@ namespace CustomButton.Utils
     {
 
         [Min(0.1f)] public float speed;
-        public override void StartAnimation(CustomButtonBase button)
+        public override void StartAnimation(MonoBehaviour button)
         {
             RectTransform rectTransform = (RectTransform)button.transform;
             var originalPosition = rectTransform.anchoredPosition;
@@ -17,7 +17,7 @@ namespace CustomButton.Utils
             stopSequence[button] += () => rectTransform.anchoredPosition = originalPosition;
         }
 
-        protected override IEnumerator AnimationCoroutine(CustomButtonBase button)
+        protected override IEnumerator AnimationCoroutine(MonoBehaviour button)
         {
             RectTransform rectTransform = (RectTransform)button.transform;
             var elapsedTime = 0f;
