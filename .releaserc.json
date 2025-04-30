@@ -1,6 +1,7 @@
 {
     "tagFormat": "v${version}",
     "preset": "angular",
+    "repositoryUrl": "https://github.com/NoTaskStudios/com.notask.custom-button.git",
     "branches": [
         "master",
         {
