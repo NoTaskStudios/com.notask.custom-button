@@ -28,11 +28,11 @@ Custom Button is a flexible and extensible Unity UI Button replacement that supp
 ### As a standalone package
 
 1. Copy the `Assets/Package` folder into your project's `Packages` directory.
-2. Rename the folder to `com.oxentegames.custom-button`.
+2. Rename the folder to `com.notask.custom-button`.
 3. In your project's `Packages/manifest.json`, add:
 
    ```json
-   "com.oxentegames.custom-button": "file:com.oxentegames.custom-button"
+   "com.notask.custom-button": "file:com.notask.custom-button"
    ```
 
 4. Save and return to Unity; the package will appear in the Package Manager.
