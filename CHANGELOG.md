@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/NoTaskStudios/com.notask.custom-button/compare/v1.0.0...v1.0.1) (2025-05-16)
+
+
+### Bug Fixes
+
+* Update package info ([f6cd3fc](https://github.com/NoTaskStudios/com.notask.custom-button/commit/f6cd3fc6b4aeab9e7f41d65ea3281b7f274b1457))
+
 # 1.0.0 (2025-04-30)
 
 
