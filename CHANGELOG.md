@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/NoTaskStudios/com.notask.custom-button/compare/v1.0.1...v1.0.2) (2025-07-02)
+
+
+### Bug Fixes
+
+* missing tmp essentials ([9f030ad](https://github.com/NoTaskStudios/com.notask.custom-button/commit/9f030adff0ba0c0ec6106c427edc41fbd22a189f))
+
 ## [1.0.1](https://github.com/NoTaskStudios/com.notask.custom-button/compare/v1.0.0...v1.0.1) (2025-05-16)
 
 
