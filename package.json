@@ -1,7 +1,7 @@
 {
   "name": "com.notask.custom-button",
   "displayName": "Custom Button",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "unity": "6000.0",
   "unityRelease": "23f1",
   "description": "A custom button package for Unity",
