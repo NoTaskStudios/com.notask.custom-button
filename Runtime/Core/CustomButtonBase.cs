@@ -130,6 +130,7 @@ namespace CustomButton
         public void OnPointerClick(PointerEventData eventData)
         {
             if (!_interactable) return;
+            if(eventData.button != PointEventData.InputButton.Left) return;
             selectionState = SelectionState.Selected;
             isSelected = true;
             EventSystem.current.SetSelectedGameObject(gameObject);
@@ -139,6 +140,7 @@ namespace CustomButton
         public void OnPointerDown(PointerEventData eventData)
         {
             if (!_interactable) return;
+            if(eventData.button != PointEventData.InputButton.Left) return;
             selectionState = SelectionState.Pressed;
         }
 
