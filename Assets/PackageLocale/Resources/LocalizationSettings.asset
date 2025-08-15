@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63817d93022759543b57e795c78efe11, type: 3}
+  m_Name: LocalizationSettings
+  m_EditorClassIdentifier: 
+  TableId: 
+  Sheets:
+  - Name: Trevor
+    Id: 0
+    TextAsset: {fileID: 4900000, guid: 2f32e42f88343ea4b9e6e7b97667561d, type: 3}
+  - Name: Error
+    Id: 1
+    TextAsset: {fileID: 4900000, guid: 00d03bff42936bd4dadafecfc07c73b2, type: 3}
+  SaveFolder: {fileID: 102900000, guid: 664e0b416cee079428b7ab2cce47cdb1, type: 3}
