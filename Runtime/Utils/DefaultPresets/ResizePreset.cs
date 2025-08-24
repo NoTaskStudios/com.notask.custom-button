@@ -36,6 +36,6 @@ public class ResizePreset : CoroutineAnimationPreset
             yield return null;
         }
 
-        StopAnimation(button);
+        // StopAnimation(button);
     }
 }
