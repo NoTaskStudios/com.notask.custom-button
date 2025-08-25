@@ -33,7 +33,7 @@ namespace CustomButton.Utils
                 yield return null;
             }
 
-            // StopAnimation(button);
+            StopAnimation(button);
         }
     }
 }
