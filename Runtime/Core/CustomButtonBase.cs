@@ -29,11 +29,10 @@ namespace CustomButton
 
         public Graphic targetGraphic 
         { 
-            get => transition.targetGraphic;
+            get => Transition.targetGraphic;
             set
             {
-                transition.targetGraphic = value;
-                transition.UpdateChildGraphics();
+                Transition.targetGraphic = value;
             }
         }
         private SelectionState _selectionState;
@@ -50,8 +49,7 @@ namespace CustomButton
             }
         }
 
-        public GraphicTransition transition;
-        public List<GraphicTransition> subTransitions;
+        public StateTransition<SelectionState> Transition;
 
         #region Plus Events
 
@@ -96,8 +94,7 @@ namespace CustomButton
         private void Reset()
         {
             ResetTransitions();
-            subTransitions?.Clear();
-            transition = new(GetComponent<Graphic>());
+            Transition = new() { targetGraphic = GetComponent<Graphic>() };
         }
 
         #endregion
@@ -183,18 +180,12 @@ namespace CustomButton
         public void UpdateButtonState()
         {
             SelectionState currentState = _interactable ? selectionState : SelectionState.Disabled;
-            transition?.UpdateState(currentState);
-            if (subTransitions != null)
-                for (int i = 0; i < subTransitions.Count; i++)
-                    subTransitions[i].UpdateState(currentState);
+            Transition?.UpdateState(currentState);
         }
 
         private void ResetTransitions()
         {
-            transition?.ResetTransitions();
-            if (subTransitions != null)
-                for (int i = 0; i < subTransitions.Count; i++)
-                    subTransitions[i].ResetTransitions();
+            Transition?.ResetTransitions();
         }
 
         #endregion

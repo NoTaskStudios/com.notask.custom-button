@@ -21,14 +21,12 @@ namespace CustomButton
         #endregion
 
         #region Activators
-
         public bool colorTintTransition = true;
         public bool spriteSwapTransition;
         public bool animationTransition;
         public bool changeChildrenColor;
         public bool changeChildrenAlpha;
         public bool invertColorOnTexts;
-
         #endregion
 
         #region  ColorBlocks
@@ -150,9 +148,9 @@ namespace CustomButton
             if (changeColor) crossFade += (graphic) => graphic.CrossFadeColor(targetColor, blockColors.fadeDuration, true, false);
             if (useAlpha) crossFade += (graphic) => graphic.CrossFadeAlpha(targetColor.a, blockColors.fadeDuration, true);
 
-            if (crossFade == null || childGraphics == null) return;
+            if (childGraphics is { Length: <= 0 }) return;
             for (int i = 0; i < childGraphics.Length; i++)
-                if (childGraphics[i] != targetGraphic) crossFade(childGraphics[i]);
+                if (childGraphics[i] != targetGraphic) crossFade?.Invoke(childGraphics[i]);
         }
 
         private void InvertColorText(Color targetColor)
