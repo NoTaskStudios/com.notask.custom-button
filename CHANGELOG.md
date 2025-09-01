@@ -1,3 +1,17 @@
+# [1.1.0](https://github.com/NoTaskStudios/com.notask.custom-button/compare/v1.0.2...v1.1.0) (2025-09-01)
+
+
+### Bug Fixes
+
+* missing packages ([ee7fd0c](https://github.com/NoTaskStudios/com.notask.custom-button/commit/ee7fd0c9e83a99f7cbe8888e99a9143ce135e1d8))
+* release remote repository config ([6c48d01](https://github.com/NoTaskStudios/com.notask.custom-button/commit/6c48d01dc7d95e44c538c86646a9df7b57b55260))
+* remove unused package ([62506e1](https://github.com/NoTaskStudios/com.notask.custom-button/commit/62506e1ff7fbbb05943c097c20ca302e819e4140))
+
+
+### Features
+
+* selection state ([f43b512](https://github.com/NoTaskStudios/com.notask.custom-button/commit/f43b512e467823deab3b019694eae32c94896fa2))
+
 ## [1.0.2](https://github.com/NoTaskStudios/com.notask.custom-button/compare/v1.0.1...v1.0.2) (2025-07-02)
 
 
