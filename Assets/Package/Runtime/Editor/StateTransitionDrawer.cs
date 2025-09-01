@@ -1,5 +1,7 @@
 #if UNITY_EDITOR
+using CustomButton.Utils;
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -7,10 +9,10 @@ using UnityEngine.UIElements;
 
 namespace CustomButton
 {
-    [CustomPropertyDrawer(typeof(GraphicTransition))]
-    public class GraphicTransitionDrawer : PropertyDrawer
+    [CustomPropertyDrawer(typeof(StateTransition<>))]
+    public class StateTransitionDrawer: PropertyDrawer
     {
-        private int selectedTab;
+        private static int selectedTab;
         // Color Tint
         private SerializedProperty activeColorTintProperty;
         private SerializedProperty activeSpriteSwapProperty;
@@ -19,7 +21,6 @@ namespace CustomButton
         private Action<int> onTabChanged;
 
         //Cache
-        private GraphicTransition graphicTransition = null;
         private UnityEngine.UI.Graphic currentGraphic;
         VisualElement colorTintTab;
         VisualElement spriteSwapTab;
@@ -27,41 +28,22 @@ namespace CustomButton
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            graphicTransition = property.boxedValue as GraphicTransition;
-            //SerializationCheck
-            if (graphicTransition.badlySerialized)//no default values, fix it
-            {
-                graphicTransition = new GraphicTransition(null);
-                property.boxedValue = graphicTransition;
-                property.serializedObject.ApplyModifiedProperties();
-                property.serializedObject.Update();
-            }
-
             #region Properties
-            SerializedProperty targetGraphicProperty = property.FindPropertyRelative(nameof(GraphicTransition.targetGraphic));
-            // Color Tint
-            SerializedProperty blockColorsProperty = property.FindPropertyRelative(nameof(GraphicTransition.blockColors));
-            SerializedProperty invertTextColorProperty = property.FindPropertyRelative(nameof(GraphicTransition.invertColorOnTexts));
-            SerializedProperty childColorProperty = property.FindPropertyRelative(nameof(GraphicTransition.changeChildrenColor));
-            SerializedProperty childAlphaProperty = property.FindPropertyRelative(nameof(GraphicTransition.changeChildrenAlpha));
-            // Sprite Swap
-            SerializedProperty spriteSwapProperty = property.FindPropertyRelative(nameof(GraphicTransition.spriteState));
-            // Animation Preset
-            SerializedProperty normalAnimProperty = property.FindPropertyRelative(nameof(GraphicTransition.normalAnimation));
-            SerializedProperty highlightedAnimProperty = property.FindPropertyRelative(nameof(GraphicTransition.highlightedAnimation));
-            SerializedProperty pressedAnimProperty = property.FindPropertyRelative(nameof(GraphicTransition.pressedAnimation));
-            SerializedProperty selectedAnimProperty = property.FindPropertyRelative(nameof(GraphicTransition.selectedAnimation));
-            SerializedProperty disabledAnimProperty = property.FindPropertyRelative(nameof(GraphicTransition.disabledAnimation));
+            SerializedProperty targetGraphicProperty = property.FindPropertyRelative(nameof(StateTransition<EditorEnum>.targetGraphic));
             //Tab System
-            activeColorTintProperty = property.FindPropertyRelative(nameof(GraphicTransition.colorTintTransition));
-            activeSpriteSwapProperty = property.FindPropertyRelative(nameof(GraphicTransition.spriteSwapTransition));
-            activeAnimationProperty = property.FindPropertyRelative(nameof(GraphicTransition.animationTransition));
+            activeColorTintProperty = property.FindPropertyRelative(nameof(StateTransition<EditorEnum>.colorTintTransition));
+            activeSpriteSwapProperty = property.FindPropertyRelative(nameof(StateTransition<EditorEnum>.spriteSwapTransition));
+            activeAnimationProperty = property.FindPropertyRelative(nameof(StateTransition<EditorEnum>.animationTransition));
             #endregion
 
             VisualElement root = new();
+            root.Add(new Label(property.name));
+            VisualElement container = new();
+            container.style.paddingLeft = 15;
+            root.Add(container);
 
             PropertyField targetGraphic = new PropertyField(targetGraphicProperty);
-            currentGraphic = graphicTransition.targetGraphic;
+            currentGraphic = targetGraphicProperty.objectReferenceValue as UnityEngine.UI.Graphic;
             targetGraphic.RegisterValueChangeCallback((evt) =>
             {
                 if (currentGraphic)
@@ -76,68 +58,52 @@ namespace CustomButton
                 currentGraphic = (UnityEngine.UI.Graphic)evt.changedProperty.objectReferenceValue;
                 evt.changedProperty.serializedObject.ApplyModifiedProperties();
             });
-            root.Add(targetGraphic);
+            container.Add(targetGraphic);
 
             VisualElement tabWindow = new VisualElement();
             tabWindow.style.flexDirection = FlexDirection.Row;
             tabWindow.SetBorder(3, borderColor: ColorExtensions.GrayShade(.1f));
-            root.Add(tabWindow);
+            container.Add(tabWindow);
 
             #region ColorTab
             //Button ColorTab
             colorTintTab = new VisualElement();
-            root.Add(colorTintTab);
+            container.Add(colorTintTab);
             tabWindow.Add(TabButton("Color Tint", 0, activeColorTintProperty, colorTintTab, tabWindow));
             colorTintTab.style.display = DisplayStyle.None;
-
-            PropertyField colorBlockField = new(blockColorsProperty);
-            colorTintTab.Add(colorBlockField);
-
-            PropertyField invertTextColorField = new(invertTextColorProperty);
-            colorTintTab.Add(invertTextColorField);
-
-            PropertyField childColorField = new(childColorProperty);
-            colorTintTab.Add(childColorField);
-
-            PropertyField childAlphaField = new(childAlphaProperty);
-            colorTintTab.Add(childAlphaField);
             #endregion
 
             #region SpriteTab
             //Button SpriteTab
             spriteSwapTab = new VisualElement();
-            root.Add(spriteSwapTab);
+            container.Add(spriteSwapTab);
             tabWindow.Add(TabButton("Sprite Swap", 1, activeSpriteSwapProperty, spriteSwapTab, tabWindow));
-            //spriteSwapTab.Add(new Label("sprite tab"));
-            spriteSwapTab.style.display = DisplayStyle.None;
-            PropertyField spriteSwap = new(spriteSwapProperty);
-            //spriteSwap.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
-            spriteSwapTab.Add(spriteSwap);
             #endregion
 
             #region AnimationTab
             //Button SpriteTab
             animationTab = new VisualElement();
-            root.Add(animationTab);
+            container.Add(animationTab);
             tabWindow.Add(TabButton("Animation", 2, activeAnimationProperty, animationTab, tabWindow));
-            //animationTab.Add(new Label("animation tab"));
             animationTab.style.display = DisplayStyle.None;
-            PropertyField normalAnimation = new(normalAnimProperty);
-            //normalAnimation.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
-            animationTab.Add(normalAnimation);
-            PropertyField highlightedAnimation = new(highlightedAnimProperty);
-            //highlightedAnimation.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
-            animationTab.Add(highlightedAnimation);
-            PropertyField pressedAnimation = new(pressedAnimProperty);
-            //pressedAnimation.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
-            animationTab.Add(pressedAnimation);
-            PropertyField selectedAnimation = new(selectedAnimProperty);
-            //selectedAnimation.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
-            animationTab.Add(selectedAnimation);
-            PropertyField disabledAnimation = new(disabledAnimProperty);
-            //disabledAnimation.RegisterValueChangeCallback((evt) => customButton.UpdateButtonState());
-            animationTab.Add(disabledAnimation);
             #endregion
+
+            //States
+            var stateNamesProperty = property.FindPropertyRelative(nameof(StateTransition<EditorEnum>.stateNames));
+            List<string> stateNames = EditorUtilities.GetArrayElements(stateNamesProperty, p => p.stringValue);
+            var statesProperty = property.FindPropertyRelative(nameof(StateTransition<EditorEnum>.states));
+            List<SerializedProperty> statesList = EditorUtilities.GetArrayProperties(statesProperty);
+
+            for (int i = 0; i < stateNames.Count; i++)
+            {
+                string stateName = stateNames[i];
+                var p = statesList[i];
+
+                //color
+                colorTintTab.Add(new PropertyField(statesList[i].FindPropertyRelative(nameof(GraphicState.color)), stateName));
+                spriteSwapTab.Add(new PropertyField(statesList[i].FindPropertyRelative(nameof(GraphicState.sprite)), stateName));
+                animationTab.Add(new PropertyField(statesList[i].FindPropertyRelative(nameof(GraphicState.animation)), stateName));
+            }
 
             VerifyTabs();
 
@@ -176,6 +142,7 @@ namespace CustomButton
                 else if (activeSpriteSwapProperty.boolValue) ChangeTab(1);
                 else if (activeAnimationProperty.boolValue) ChangeTab(2);
             }
+            else ChangeTab(selectedTab);
         }
 
         private VisualElement TabButton(string label, int tabID, SerializedProperty enableProperty, VisualElement tabProperties, VisualElement tabwindow)
@@ -201,11 +168,10 @@ namespace CustomButton
             enableToggle.style.width = 14;
             enableToggle.RegisterValueChangedCallback((evt) =>
             {
-
                 enableProperty.boolValue = evt.newValue;
                 enableProperty.serializedObject.ApplyModifiedProperties();
                 enableProperty.serializedObject.Update();
-                graphicTransition.ResetTransitions();
+                //graphicTransition.ResetTransitions();
                 VerifyTabs();
             });
             button.Add(enableToggle);
@@ -223,6 +189,13 @@ namespace CustomButton
 
             return button;
         }
+
+
+    }
+
+    public enum EditorEnum
+    {
+        None,
     }
 }
 #endif

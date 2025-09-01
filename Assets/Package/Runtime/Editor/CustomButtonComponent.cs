@@ -72,7 +72,7 @@ namespace CustomButton
             const string assetShake = "DefaultPresets/ShakePreset";
             var defaultPreset = Resources.Load<AnimationPreset>(assetShake);
 
-            custombutton.transition = new(customButtonObject.GetComponent<Image>());
+            custombutton.Transition = new() { targetGraphic = customButtonObject.GetComponent<Image>() };
             Undo.RegisterCreatedObjectUndo(customButtonObject, "Create " + customButtonObject.name);
             custombutton.OnTransformChildrenChanged();
             

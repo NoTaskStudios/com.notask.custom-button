@@ -6,16 +6,17 @@ namespace CustomButton
     public class SubGraphicTransition : MonoBehaviour
     {
         [SerializeField] private CustomButtonBase customButton;
-        [Space,SerializeField] private GraphicTransition transition;
+        [Space, SerializeField] private StateTransition<SelectionState> Transition;
 
         private void Reset()
         {
             customButton = GetComponentInParent<CustomButtonBase>();
-            transition = new GraphicTransition(GetComponent<Graphic>());
+            Transition = new StateTransition<SelectionState>();
+            TryGetComponent(out Transition.targetGraphic);
         }
 
         private void Awake() => customButton.onStateChange += UpdateStage;
 
-        private void UpdateStage(SelectionState state) => transition.UpdateState(state);
+        private void UpdateStage(SelectionState state) => Transition.UpdateState(state);
     }
 }
