@@ -58,7 +58,7 @@ namespace CustomButton
                 currentState.SpriteTransition(targetGraphic as Image);
             if (animationTransition)
             {
-                if (!Application.isPlaying) return;
+                if (!Application.isPlaying || !targetGraphic.gameObject.activeInHierarchy) return;
                 currentAnimation?.StopAnimation(targetGraphic);
                 currentAnimation = currentState.AnimationTransition(targetGraphic);
             }
