@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/NoTaskStudios/com.notask.custom-button/compare/v1.1.0...v1.1.1) (2025-09-05)
+
+
+### Bug Fixes
+
+* trying to play coroutine while disabled ([624a99c](https://github.com/NoTaskStudios/com.notask.custom-button/commit/624a99cc19bddd9b57a5094a849588f0a652c929))
+
 # [1.1.0](https://github.com/NoTaskStudios/com.notask.custom-button/compare/v1.0.2...v1.1.0) (2025-09-01)
 
 
