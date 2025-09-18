@@ -75,12 +75,12 @@ namespace CustomButton
         private void Awake()
         {
             rectTransform = GetComponent<RectTransform>();
+            UpdateButtonState();
         }
 
         private void OnEnable()
         {
             onClick.AddListener(OnClick);
-            selectionState = SelectionState.Normal;
         }
 
         private void OnDisable()
