@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/NoTaskStudios/com.notask.custom-button/compare/v1.1.1...v1.1.2) (2025-09-18)
+
+
+### Bug Fixes
+
+* custom button state on start ([47df15a](https://github.com/NoTaskStudios/com.notask.custom-button/commit/47df15acc161519b95d7128cd53d839cf26ff8f3))
+
 ## [1.1.1](https://github.com/NoTaskStudios/com.notask.custom-button/compare/v1.1.0...v1.1.1) (2025-09-05)
 
 
