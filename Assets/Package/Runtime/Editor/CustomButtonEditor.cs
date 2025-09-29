@@ -14,6 +14,7 @@ namespace CustomButton
         private Texture2D customIcon;
         private Texture2D circleIcon;
         private SerializedProperty interactableProperty;
+        private SerializedProperty filterProperty;
 
         private SerializedProperty onClickProperty;
 
@@ -25,6 +26,7 @@ namespace CustomButton
         {
             LoadIconResource();
             interactableProperty = serializedObject.FindProperty("_interactable");
+            filterProperty = serializedObject.FindProperty("_pointerFilter");
             onClickProperty = serializedObject.FindProperty("onClick");
         }
         private void LoadIconResource()
@@ -47,6 +49,9 @@ namespace CustomButton
             PropertyField interactable = new PropertyField(interactableProperty);
             interactable.RegisterValueChangeCallback(_ => customButton.UpdateButtonState());
             root.Add(interactable);
+            
+            PropertyField filter = new PropertyField(filterProperty);
+            root.Add(filter);
 
             SerializedProperty transition = serializedObject.FindProperty(nameof(CustomButtonBase.Transition));
             PropertyField transitionField = new PropertyField(transition);
