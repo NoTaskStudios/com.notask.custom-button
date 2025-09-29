@@ -14,6 +14,7 @@ namespace CustomButton
         public RectTransform rectTransform;
 
         [SerializeField] private bool _interactable = true;
+        [SerializeField] private PointerFilter _pointerFilter = PointerFilter.LeftClick | PointerFilter.Tap;
 
         public bool Interactable
         {
@@ -24,6 +25,16 @@ namespace CustomButton
                 if(!value) isSelected = false;
                 _interactable = value;
                 selectionState = _interactable ? SelectionState.Normal : SelectionState.Disabled;
+            }
+        }
+
+        public PointerFilter PointerFilter
+        {
+            get => _pointerFilter;
+            set
+            {
+                _pointerFilter = value;
+                UpdatePointerFilter();
             }
         }
 
@@ -50,6 +61,8 @@ namespace CustomButton
         }
 
         public StateTransition<SelectionState> Transition;
+
+        private List<int> filter;
 
         #region Plus Events
 
@@ -81,6 +94,7 @@ namespace CustomButton
         private void OnEnable()
         {
             onClick.AddListener(OnClick);
+            UpdatePointerFilter();
         }
 
         private void OnDisable()
@@ -97,17 +111,40 @@ namespace CustomButton
             Transition = new() { targetGraphic = GetComponent<Graphic>() };
         }
 
+        private void OnValidate()
+        {
+            UpdatePointerFilter();
+        }
+
         #endregion
+
+        private void UpdatePointerFilter()
+        {
+            if(!Application.isPlaying) return;
+            filter = new();
+            int value = (int)_pointerFilter;
+            int comparingValue = 1;
+            for (int i = 0; i < 32; i++)
+            {
+                if ((comparingValue & value) != 0)
+                    filter.Add(i - 3);
+
+                comparingValue <<= 1;
+            }
+
+            for (int i = 0; i < filter.Count; i++)
+            {
+                Debug.Log(filter[i]);
+            }
+        }
 
         public void ToogleInteractable() => Interactable = !Interactable;
 
         public virtual void OnClick()
         {
-            if(pointerUpBuffer != null)
-            {
-                StopCoroutine(pointerUpBuffer);
-                pointerUpBuffer = null;
-            }
+            if (pointerUpBuffer == null) return;
+            StopCoroutine(pointerUpBuffer);
+            pointerUpBuffer = null;
         }
 
         public void OnTransformChildrenChanged()
@@ -126,7 +163,7 @@ namespace CustomButton
         //Goes after PointerUp
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (!_interactable) return;
+            if (!_interactable || !filter.Contains(eventData.pointerId)) return;
             selectionState = SelectionState.Selected;
             isSelected = true;
             EventSystem.current.SetSelectedGameObject(gameObject);
@@ -135,14 +172,14 @@ namespace CustomButton
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            if (!_interactable) return;
+            if (!_interactable || !filter.Contains(eventData.pointerId)) return;
             selectionState = SelectionState.Pressed;
         }
 
         //Goes before PointerUp
         public void OnPointerUp(PointerEventData eventData)
         {
-            if (!_interactable) return;
+            if (!_interactable || !filter.Contains(eventData.pointerId)) return;
             pointerUpBuffer = StartCoroutine(PointerUpBuffer());
         }
 
@@ -197,5 +234,16 @@ namespace CustomButton
         Pressed,
         Selected,
         Disabled
+    }
+
+    [Flags]
+    public enum PointerFilter
+    {
+        MiddleClick = 1,
+        RightClick = 2,
+        LeftClick = 4,
+        Tap = 8,
+        DoubleTap = 16,
+        TripleTap = 32,
     }
 }
