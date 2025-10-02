@@ -1,3 +1,10 @@
+## [1.1.4](https://github.com/NoTaskStudios/com.notask.custom-button/compare/v1.1.3...v1.1.4) (2025-10-02)
+
+
+### Bug Fixes
+
+* pointer filter ([e75d9e0](https://github.com/NoTaskStudios/com.notask.custom-button/commit/e75d9e06c956c64fff1911ee90da6777b20537e2))
+
 ## [1.1.3](https://github.com/NoTaskStudios/com.notask.custom-button/compare/v1.1.2...v1.1.3) (2025-09-29)
 
 
