@@ -74,11 +74,10 @@ namespace CustomButton
         #endregion
 
         #region Built-in
-        private void Awake()
-        {
-            rectTransform = GetComponent<RectTransform>();
-            UpdateButtonState();
-        }
+
+        private void Awake() => rectTransform = GetComponent<RectTransform>();
+
+        private void Start() => UpdateButtonState();
 
         private void OnEnable()
         {
