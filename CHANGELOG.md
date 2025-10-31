@@ -1,3 +1,10 @@
+## [1.1.5](https://github.com/NoTaskStudios/com.notask.custom-button/compare/v1.1.4...v1.1.5) (2025-10-31)
+
+
+### Bug Fixes
+
+* subgraphic transition on start ([67a189e](https://github.com/NoTaskStudios/com.notask.custom-button/commit/67a189ea00fc66f83a0c216a2b363c0dc7a9fac7))
+
 ## [1.1.4](https://github.com/NoTaskStudios/com.notask.custom-button/compare/v1.1.3...v1.1.4) (2025-10-02)
 
 
